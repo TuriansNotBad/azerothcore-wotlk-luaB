@@ -15,9 +15,12 @@ private:
 };
 
 class Player;
+struct lua_State;
 class LuaBotAI {
 
     ShortTimeTracker m_updateTimer;
+    uint32 m_updateInterval;
+    lua_State* L;
 
 public:
 
@@ -30,6 +33,7 @@ public:
     ~LuaBotAI();
 
     void CeaseUpdates(bool cease = true) { ceaseUpdates = cease; }
+    void SetUpdateInterval(uint32 n) { m_updateInterval = n; }
     void Update(uint32 diff);
 
 };

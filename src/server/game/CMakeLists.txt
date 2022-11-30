@@ -44,6 +44,15 @@ target_link_libraries(game-interface
 add_library(game STATIC
   ${PRIVATE_SOURCES})
 
+# luas
+get_filename_component(LUADIR ${CMAKE_SOURCE_DIR}/../lua ABSOLUTE)
+target_link_libraries(game PUBLIC ${LUADIR}/lib/lua.lib)
+target_include_directories(game
+  PRIVATE
+    ${LUADIR}/src)
+#luas
+
+
 add_dependencies(game revision.h)
 
 target_include_directories(game

@@ -1,11 +1,15 @@
-// mostly mod-playerbots code from https://github.com/ZhengPeiRu21/mod-playerbots
+// login/logout code is mostly mod-playerbots code from https://github.com/ZhengPeiRu21/mod-playerbots
 
+#include "lua.hpp"
 #include "LuaBotManager.h"
 #include "Player.h"
 #include "GameTime.h"
 #include "Common.h"
 #include "QueryHolder.h"
 #include "WorldSession.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 
 class LuaBotLoginQueryHolder : public LoginQueryHolder
@@ -19,14 +23,58 @@ public:
 };
 
 
-LuaBotManager::LuaBotManager() {
-
+LuaBotManager::LuaBotManager() : L(nullptr), bLuaCeaseUpdates(false) {
+    LuaLoadAll();
 }
 
 LuaBotManager::~LuaBotManager() {
-
+    if (L) lua_close(L);
 }
 
+// ********************************************************
+// **                  Lua basics                        **
+// ********************************************************
+
+bool LuaBotManager::LuaDofile(const std::string& filename) {
+    if (luaL_dofile(L, filename.c_str()) != LUA_OK) {
+        bLuaCeaseUpdates = true;
+        LOG_ERROR("luabots", "Lua error executing file {}: {}\n", filename.c_str(), lua_tostring(L, -1));
+        lua_pop(L, 1); // pop the error object
+        return false;
+    }
+    return true;
+}
+
+
+void LuaBotManager::LuaLoadFiles(const std::string& fpath) {
+    if (!L) return;
+
+    // logic and goal list must be loaded before all other files.
+    if (!LuaDofile((fpath + "/logic_list.lua")))
+        return;
+    if (!LuaDofile((fpath + "/goal_list.lua")))
+        return;
+
+    // do all files recursively
+    for (const auto& entry : fs::recursive_directory_iterator(fpath))
+        if (entry.path().extension().generic_string() == ".lua")
+            if (!LuaDofile(entry.path().generic_string()))
+                return;
+}
+
+void LuaBotManager::LuaLoadAll() {
+    std::string fpath = "ai";
+    if (L) lua_close(L); // kill old state
+
+    L = luaL_newstate();
+    luaL_openlibs(L); // replace with individual libraries later
+
+    LuaLoadFiles(fpath);
+}
+
+// ********************************************************
+// **                  Bot Management                    **
+// ********************************************************
 
 Player* LuaBotManager::GetLuaBot(ObjectGuid guid) {
     LuaBotMap::const_iterator it = m_bots.find(guid);
@@ -79,7 +127,7 @@ void LuaBotManager::HandlePlayerBotLoginCallback(LuaBotLoginQueryHolder const& h
     Player* bot = botSession->GetPlayer();
     if (!bot)
     {
-        //LogoutPlayerBot(holder.GetGuid());
+        LogoutPlayerBot(holder.GetGuid());
         LOG_ERROR("luabots", "Error logging in bot {}", holder.GetGuid().ToString().c_str());
         return;
     }
@@ -104,7 +152,7 @@ void LuaBotManager::OnBotLogin(Player* bot) {
 }
 
 
-void LuaBotManager::LogoutPlayerBot(ObjectGuid guid)
+bool LuaBotManager::LogoutPlayerBotInternal(ObjectGuid guid)
 {
     if (Player* bot = GetLuaBot(guid)) {
         LOG_INFO("luabots", "Bot {} logging out", bot->GetName().c_str());
@@ -113,40 +161,59 @@ void LuaBotManager::LogoutPlayerBot(ObjectGuid guid)
         WorldSession* botWorldSessionPtr = bot->GetSession();
 
         if (bot && !botWorldSessionPtr->isLogingOut()) {
-            m_bots.erase(guid);                 // deletes bot player ptr inside this WorldSession PlayerBotMap
             botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
             delete botWorldSessionPtr;              // finally delete the bot's WorldSession
+            return true;
         }
     }
+    return false;
+}
+
+
+void LuaBotManager::LogoutPlayerBot(ObjectGuid guid)
+{
+    if (LogoutPlayerBotInternal(guid))
+        m_bots.erase(guid);
 }
 
 
 void LuaBotManager::LogoutAllBots() {
 
-    for (auto itr = m_bots.begin(); itr != m_bots.end();) {
-        // lazy code incoming
-        if (Player* bot = itr._Ptr->_Myval.second) {
-            LOG_INFO("luabots", "Bot {} logging out", bot->GetName().c_str());
-            bot->SaveToDB(false, false);
+    for (auto itr = m_bots.begin(); itr != m_bots.end();)
+        if (Player* bot = itr._Ptr->_Myval.second)
 
-            WorldSession* botWorldSessionPtr = bot->GetSession();
-
-            if (bot && !botWorldSessionPtr->isLogingOut()) {
+            if (LogoutPlayerBotInternal(bot->GetGUID()))
                 itr = m_bots.erase(itr);                 // deletes bot player ptr inside this WorldSession PlayerBotMap
-                botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
-                delete botWorldSessionPtr;              // finally delete the bot's WorldSession
-            }
             else
                 itr++;
             
-        }
-    }
+        else
+            itr = m_bots.erase(itr); // delete invalid bot entry
 
 }
 
 
 void LuaBotManager::Update(uint32 diff) {
 
+    // reload requested
+    if (bLuaReload) {
+        bLuaCeaseUpdates = false;
+        bLuaReload = false;
+
+        // Code to reset each bot in the loop here
+        for (auto bot : m_bots) {
+            if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
+                // Reset bot movement, combat, goals.
+            }
+        }
+        LuaLoadAll();
+    }
+
+    // lua crashed on initialization
+    if (bLuaCeaseUpdates)
+        return;
+
+    // make ai evaluate their thingdos
     for (auto bot : m_bots) {
         if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
             botAI->Update(diff);
