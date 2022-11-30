@@ -40,7 +40,7 @@ class Creature;
 class GameObject;
 class InstanceSave;
 class Item;
-class LoginQueryHolder;
+//class LoginQueryHolder;
 class LoadPetFromDBQueryHolder;
 class Object;
 class Pet;
@@ -224,6 +224,23 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_3v3_TYPE                   = 3,
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5
 };
+
+// expose to bot code - lua bots
+#include "QueryHolder.h"
+class LoginQueryHolder : public CharacterDatabaseQueryHolder
+{
+private:
+    uint32 m_accountId;
+    ObjectGuid m_guid;
+public:
+    LoginQueryHolder(uint32 accountId, ObjectGuid guid)
+        : m_accountId(accountId), m_guid(guid) { }
+
+    ObjectGuid GetGuid() const { return m_guid; }
+    uint32 GetAccountId() const { return m_accountId; }
+    bool Initialize();
+};
+
 
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
