@@ -7,6 +7,7 @@
 #include "Common.h"
 #include "QueryHolder.h"
 #include "WorldSession.h"
+#include "LuaBindsBotCommon.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -68,6 +69,10 @@ void LuaBotManager::LuaLoadAll() {
 
     L = luaL_newstate();
     luaL_openlibs(L); // replace with individual libraries later
+
+    lua_pushinteger(L, 0);
+    lua_setglobal(L, "PB_LEADER_ROLE");
+    LuaBindsAI::BindAll(L);
 
     LuaLoadFiles(fpath);
 }
@@ -145,9 +150,7 @@ void LuaBotManager::OnBotLogin(Player* bot) {
     LuaBotAI* botAI = bot->GetLuaAI();
     if (!botAI) return;
 
-    if (bot->getLevel() != botAI->master->getLevel()) {
-        bot->GiveLevel(botAI->master->getLevel());
-    }
+    botAI->Init();
 
 }
 

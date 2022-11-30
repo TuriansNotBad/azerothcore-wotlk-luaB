@@ -227,6 +227,15 @@ add_library(scripts STATIC
   ScriptLoader.h
   ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER}
   ${PRIVATE_SOURCES_SCRIPTS})
+  
+# luas
+get_filename_component(LUADIR ${CMAKE_SOURCE_DIR}/../lua ABSOLUTE)
+target_link_libraries(scripts PUBLIC ${LUADIR}/lib/lua.lib)
+target_include_directories(scripts
+  PRIVATE
+    ${LUADIR}/src)
+#luas
+
 
 target_link_libraries(scripts
   PRIVATE
