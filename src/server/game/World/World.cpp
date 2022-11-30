@@ -96,6 +96,9 @@
 #include <boost/asio/ip/address.hpp>
 #include <cmath>
 
+// luabots
+#include "LuaBotManager.h"
+
 namespace
 {
     TaskScheduler playersSaveScheduler;
@@ -2507,6 +2510,9 @@ void World::Update(uint32 diff)
         METRIC_TIMER("world_update_time", METRIC_TAG("type", "Update world scripts"));
         sScriptMgr->OnWorldUpdate(diff);
     }
+
+    // Luabots, what's all this fancy metric_timer stuff
+    sLuaBotMgr.Update(diff);
 
     {
         METRIC_TIMER("world_update_time", METRIC_TAG("type", "Update playersSaveScheduler"));
