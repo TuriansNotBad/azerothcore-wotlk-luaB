@@ -45,6 +45,8 @@
 #include <string>
 #include <vector>
 
+#include "LuaBotAI.h" //lua bots
+
 struct CreatureTemplate;
 struct Mail;
 struct TrainerSpell;
@@ -1048,9 +1050,32 @@ class Player : public Unit, public GridObject<Player>
     friend class CinematicMgr;
     friend void Item::AddToUpdateQueueOf(Player* player);
     friend void Item::RemoveFromUpdateQueueOf(Player* player);
+
+    // lua bots
+    std::unique_ptr<LuaBotAI> m_luaAI;
+
 public:
     explicit Player(WorldSession* session);
     ~Player() override;
+
+    // lua bots ****************************************************
+
+    LuaBotAI* GetLuaAI() { return m_luaAI.get(); }
+    /// <summary>
+    /// Initializes AI object. Player object has full ownership.
+    /// This will never replace an already initialized AI object.
+    /// </summary>
+    /// <param name="me">- bot's player obj.</param>
+    /// <param name="master">- bot owner's player obj.</param>
+    /// <param name="logicID">- lua logic ID.</param>
+    void CreateLuaAI(Player* me, Player* master, int logicID) {
+        // Never replace existing ai object. Change logicId if necessary or better change logic in your master logic fn.
+        if (!m_luaAI)
+            m_luaAI = std::make_unique<LuaBotAI>(me, master, logicID);
+    }
+    bool IsLuaBot() { return m_luaAI != nullptr; }
+
+    // *************************************************************
 
     void CleanupsBeforeDelete(bool finalCleanup = true) override;
 

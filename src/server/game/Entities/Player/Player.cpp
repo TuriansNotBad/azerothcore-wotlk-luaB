@@ -147,7 +147,7 @@ static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_mover(this)
+Player::Player(WorldSession* session): Unit(true), m_mover(this), m_luaAI(nullptr)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
