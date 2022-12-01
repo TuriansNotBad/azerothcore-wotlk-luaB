@@ -3,6 +3,11 @@
 #include "LuaLibAI.h"
 #include "LuaBotAI.h"
 #include "LuaLibUnit.h"
+#include "Player.h"
+#include "TargetedMovementGenerator.h"
+#include "MovementGenerator.h"
+#include "Pet.h"
+#include "CreatureAI.h"
 
 
 void LuaBindsAI::BindAI( lua_State* L ) {
@@ -88,3 +93,405 @@ int LuaBindsAI::AI_Print( lua_State* L ) {
 	( *ai )->Print();
 	return 0;
 }
+
+
+int LuaBindsAI::AI_GetUserTbl(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ai->GetUserTblRef());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_DrinkAndEat(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->DrinkAndEat());
+    return 1;
+}
+
+
+// -----------------------------------------------------------
+//                      Combat RELATED
+// -----------------------------------------------------------
+
+
+int LuaBindsAI::AI_AddAmmo(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    ai->AddAmmo();
+    return 0;
+}
+
+
+int LuaBindsAI::AI_AttackAutoshot(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    float chaseDist = luaL_checknumber(L, 3);
+    ai->AttackAutoshot(pVictim, chaseDist);
+    return 0;
+}
+
+
+int LuaBindsAI::AI_AttackSet(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    bool meleeAttack = luaL_checkboolean(L, 3);
+    lua_pushboolean(L, ai->me->Attack(pVictim, meleeAttack));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_AttackSetChase(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    bool meleeAttack = luaL_checkboolean(L, 3);
+    float chaseDist = luaL_checknumber(L, 4);
+    bool attack = ai->me->Attack(pVictim, meleeAttack);
+    lua_pushboolean(L, attack);
+    if (attack)
+        ai->me->GetMotionMaster()->MoveChase(pVictim, chaseDist);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_AttackStopAutoshot(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    ai->AttackStopAutoshot();
+    return 0;
+}
+
+
+int LuaBindsAI::AI_AttackStart(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    Player* me = ai->me;
+
+    if (me->IsMounted())
+        me->RemoveAurasByType(SPELL_AURA_MOUNTED);
+
+    if (me->Attack(pVictim, true))
+    {
+        float chaseDist = 1.0f;
+        if (ai->GetRole() == ROLE_RDPS &&
+            me->GetPowerPct(POWER_MANA) > 10.0f &&
+            me->IsWithinCombatRange(pVictim, 8.0f))
+            chaseDist = 25.0f;
+
+        me->GetMotionMaster()->MoveChase(pVictim, chaseDist, ai->GetRole() == ROLE_MDPS ? 3.0f : 0.0f);
+        lua_pushboolean(L, true);
+        return 1;
+    }
+    lua_pushboolean(L, false);
+    return 1;
+
+}
+
+
+int LuaBindsAI::AI_GetChaseDist(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    if (ai->me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE) {
+        ChaseMovementGenerator<Player>* cmg = dynamic_cast<ChaseMovementGenerator<Player>*>(ai->me->GetMotionMaster()->top());
+        if (cmg) {
+            if (cmg->GetRange()->has_value()) {
+                const ChaseRange cr = cmg->GetRange()->value();
+                lua_pushnumber(L, cr.MinRange);
+                lua_pushnumber(L, cr.MinTolerance);
+                lua_pushnumber(L, cr.MaxRange);
+                lua_pushnumber(L, cr.MaxTolerance);
+                return 4;
+            }
+        }
+    }
+    lua_pushnumber(L, -1);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetChaseAngle(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    if (ai->me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE) {
+        ChaseMovementGenerator<Player>* cmg = dynamic_cast<ChaseMovementGenerator<Player>*>(ai->me->GetMotionMaster()->top());
+        if (cmg) {
+            if (cmg->GetAngle()->has_value()) {
+                const ChaseAngle cr = cmg->GetAngle()->value();
+                lua_pushnumber(L, cr.RelativeAngle);
+                lua_pushnumber(L, cr.Tolerance);
+                return 2;
+            }
+        }
+    }
+    lua_pushnumber(L, -1);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetChaseTarget(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    if (ai->me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+        if (ChaseMovementGenerator<Player>* cmg = dynamic_cast<ChaseMovementGenerator<Player>*>(ai->me->GetMotionMaster()->top())) {
+            lua_pushunitornil(L, cmg->GetTarget());
+            return 1;
+        }
+    lua_pushnil(L);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_UpdateChaseDist(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    float minR = luaL_checknumber(L, 2);
+    float minT = luaL_checknumber(L, 3);
+    float maxR = luaL_checknumber(L, 4);
+    float maxT = luaL_checknumber(L, 5);
+    if (ai->me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE) {
+        ChaseMovementGenerator<Player>* cmg = dynamic_cast<ChaseMovementGenerator<Player>*>(ai->me->GetMotionMaster()->top());
+        if (cmg)
+            cmg->SetRange(minR, minT, maxR, maxT);
+    }
+    return 0;
+}
+
+
+int LuaBindsAI::AI_UpdateChaseAngle(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    float A = luaL_checknumber(L, 2);
+    float T = luaL_checknumber(L, 3);
+    if (ai->me->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE) {
+        ChaseMovementGenerator<Player>* cmg = dynamic_cast<ChaseMovementGenerator<Player>*>(ai->me->GetMotionMaster()->top());
+        if (cmg)
+            cmg->SetAngle(A, T);
+    }
+    return 0;
+}
+
+
+int LuaBindsAI::AI_AttackStop(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->me->AttackStop());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_CanTryToCastSpell(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pTarget = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    int spellId = luaL_checkinteger(L, 3);
+    bool bAura = luaL_checkboolean(L, 4);
+    if (const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellId))
+        lua_pushboolean(L, ai->CanTryToCastSpell(pTarget, spell, bAura));
+    else
+        luaL_error(L, "AI.CanTryToCastSpell spell doesn't exist. Id = %d", spellId);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_DoCastSpell(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pTarget = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    int spellId = luaL_checkinteger(L, 3);
+    if (const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellId))
+        lua_pushinteger(L, ai->DoCastSpell(pTarget, spell));
+    else
+        luaL_error(L, "AI.DoCastSpell spell doesn't exist. Id = %d", spellId);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetAttackersInRangeCount(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    float r = luaL_checknumber(L, 2);
+    lua_pushinteger(L, (*ai)->GetAttackersInRangeCount(r));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetClass(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    lua_pushinteger(L, (*ai)->GetRole());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetMarkedTarget(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    int markId = luaL_checkinteger(L, 2);
+    if (markId < RaidTargetIcon::RAID_TARGET_ICON_STAR || markId > RaidTargetIcon::RAID_TARGET_ICON_SKULL)
+        luaL_error(L, "AI.GetMarkedTarget - invalid mark id. Acceptable values - [0, 7]. Got %d", markId);
+    lua_pushunitornil(L, (*ai)->GetMarkedTarget((RaidTargetIcon) markId));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetRole(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    lua_pushinteger(L, (*ai)->GetRole());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetGameTime(lua_State* L) {
+    lua_pushinteger(L, getMSTime());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_RunAwayFromTarget(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pTarget = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    lua_pushboolean(L, ai->RunAwayFromTarget(pTarget));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_SelectNearestTarget(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    float dist = luaL_checknumber(L, 2);
+    int pos = luaL_checkinteger(L, 3);
+    bool playerOnly = luaL_checkboolean(L, 4);
+    int auraID = luaL_checkinteger(L, 5);
+    lua_pushunitornil(L, ai->SelectTarget(SelectTargetMethod::MinDistance, pos, dist, false, 0));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_SelectPartyAttackTarget(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    lua_pushunitornil(L, (*ai)->SelectPartyAttackTarget());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_SelectShieldTarget(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    float hpRate = luaL_checknumber(L, 2);
+    lua_pushplayerornil(L, (*ai)->SelectShieldTarget(hpRate));
+    return 1;
+}
+
+// -----------------------------------------------------------
+//                      Pet RELATED
+// -----------------------------------------------------------
+
+int LuaBindsAI::AI_SummonPetIfNeeded(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    uint32 petId = luaL_checkinteger(L, 2);
+    (*ai)->SummonPetIfNeeded(petId);
+    return 0;
+}
+
+int LuaBindsAI::AI_GetPet(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushunitornil(L, ai->me->GetPet());
+    return 1;
+}
+
+/// <summary>
+/// If unit has pet sends attack command to pet ai
+/// </summary>
+/// <param name="unit userdata">- Unit</param>
+/// <param name="unit userdata">- Target to attack</param>
+int LuaBindsAI::AI_PetAttack(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *Unit_GetUnitObject(L, 2);
+    if (Pet* pPet = ai->me->GetPet())
+        if (!pPet->GetVictim() || pPet->GetVictim()->GetGUID() != pVictim->GetGUID()) {
+            pPet->GetCharmInfo()->SetIsCommandAttack(true);
+            pPet->AI()->AttackStart(pVictim);
+        }
+    return 0;
+}
+
+
+/// <summary>
+/// If unit has pet tries to make it cast an ability
+/// </summary>
+/// <param name="unit userdata">- Pet owner</param>
+/// <param name="unit userdata">- Target of spell</param>
+/// <param name="int">- Spell ID</param>
+/// <returns>int - Spell cast result</returns>
+int LuaBindsAI::AI_PetCast(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pVictim = *Unit_GetUnitObject(L, 2);
+    uint32 spellId = luaL_checkinteger(L, 3);
+    if (Pet* pPet = ai->me->GetPet())
+        if (CreatureAI* pAI = pPet->AI()) {
+            lua_pushinteger(L, pAI->DoCast(pVictim, spellId));
+            return 1;
+        }
+    lua_pushinteger(L, -1);
+    return 1;
+}
+
+
+// -----------------------------------------------------------
+//                      Movement RELATED
+// -----------------------------------------------------------
+
+
+int LuaBindsAI::AI_GoName(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    char name[128] = {};
+    strcpy(name, luaL_checkstring(L, 2));
+    (*ai)->GoPlayerCommand(ObjectAccessor::FindPlayerByName(name));
+    return 0;
+}
+
+
+int LuaBindsAI::AI_Mount(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    bool toMount = luaL_checkboolean(L, 2);
+    uint32 mountSpell = luaL_checknumber(L, 3);
+    (*ai)->Mount(toMount, mountSpell);
+    return 0;
+}
+
+
+// -----------------------------------------------------------
+//                    XP / LEVEL RELATED
+// -----------------------------------------------------------
+
+
+int LuaBindsAI::AI_InitTalentForLevel(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    (*ai)->me->InitTalentForLevel();
+    return 0;
+}
+
+
+int LuaBindsAI::AI_GiveLevel(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    int level = luaL_checkinteger(L, 2);
+    (*ai)->me->GiveLevel(level);
+    (*ai)->me->InitTalentForLevel();
+    (*ai)->me->SetUInt32Value(PLAYER_XP, 0);
+    (*ai)->me->UpdateSkillsToMaxSkillsForLevel();
+    (*ai)->me->SetFullHealth();
+    Powers power = (*ai)->me->getPowerType();
+    (*ai)->me->SetPower(power, (*ai)->me->GetMaxPower(power));
+    return 0;
+}
+
+
+int LuaBindsAI::AI_SetXP(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    int value = luaL_checkinteger(L, 2);
+    (*ai)->me->SetUInt32Value(PLAYER_XP, value);
+    return 0;
+}
+
+
+// -----------------------------------------------------------
+//                    DEATH RELATED
+// -----------------------------------------------------------
+
+
+int LuaBindsAI::AI_ShouldAutoRevive(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    lua_pushboolean(L, (*ai)->ShouldAutoRevive());
+    return 1;
+}
+
+
+
+
+
+
+

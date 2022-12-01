@@ -3,6 +3,7 @@
 
 #include "GoalManager.h"
 #include "LogicManager.h"
+#include "UnitAI.h"
 
 enum LuaBotRole {
     ROLE_INVALID,
@@ -11,6 +12,19 @@ enum LuaBotRole {
     ROLE_TANK,
     ROLE_HEALER
 };
+
+enum RaidTargetIcon : uint8
+{
+    RAID_TARGET_ICON_STAR = 0,
+    RAID_TARGET_ICON_CIRCLE = 1,
+    RAID_TARGET_ICON_DIAMOND = 2,
+    RAID_TARGET_ICON_TRIANGLE = 3,
+    RAID_TARGET_ICON_MOON = 4,
+    RAID_TARGET_ICON_SQUARE = 5,
+    RAID_TARGET_ICON_CROSS = 6,
+    RAID_TARGET_ICON_SKULL = 7
+};
+
 
 // vmangos struct
 struct ShortTimeTracker
@@ -98,6 +112,69 @@ public:
 
     void Init();
     void Update(uint32 diff);
+
+    // Vmangos ported partybots funcs
+
+    void AttackAutoshot(Unit* pVictim, float chaseDist);
+    void AttackStopAutoshot();
+    void AddItemToInventory(uint32 itemId, uint32 count = 1);
+    void AddAmmo();
+    bool DrinkAndEat();
+    uint8 GetAttackersInRangeCount(float range) const;
+    Unit* GetMarkedTarget(RaidTargetIcon mark) const;
+    void GoPlayerCommand(Player* target);
+    bool HandleSummonCommand(Player* target);
+    void Mount(bool toMount, uint32 mountSpell);
+    bool IsValidHostileTarget(Unit const* pTarget) const;
+    bool IsValidDispelTarget(Unit* pTarget, SpellInfo const* pSpellEntry) const;
+    bool MoveDistance(Unit* pTarget, float distance, float angle);
+    bool RunAwayFromTarget(Unit* pTarget);
+    Unit* SelectPartyAttackTarget() const;
+    Player* SelectShieldTarget(float hpRate) const;
+    bool ShouldAutoRevive() const;
+    void SummonPetIfNeeded(uint32 petId);
+
+    // Spell casting
+
+    SpellCastResult DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry);
+    bool CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bool bAura = true) const;
+
+    // UnitAI funcs
+
+    // Select the best (up to) <num> targets (in <targetType> order) from the threat list that fulfill the following:
+    // - Not among the first <offset> entries in <targetType> order (or SelectTargetMethod::MaxThreat order,
+    //   if <targetType> is SelectTargetMethod::Random).
+    // - Within at most <dist> yards (if dist > 0.0f)
+    // - At least -<dist> yards away (if dist < 0.0f)
+    // - Is a player (if playerOnly = true)
+    // - Not the current tank (if withTank = false)
+    // - Has aura with ID <aura> (if aura > 0)
+    // - Does not have aura with ID -<aura> (if aura < 0)
+    // The resulting targets are stored in <targetList> (which is cleared first).
+    void SelectTargetList(std::list<Unit*>& targetList, uint32 num, SelectTargetMethod targetType, float dist, bool playerOnly, int32 aura);
+
+    // Select the best (up to) <num> targets (in <targetType> order) satisfying <predicate> from the threat list and stores them in <targetList> (which is cleared first).
+    // If <offset> is nonzero, the first <offset> entries in <targetType> order (or SelectTargetMethod::MaxThreat
+    // order, if <targetType> is SelectTargetMethod::Random) are skipped.
+    template <class PREDICATE>
+    void SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectTargetMethod targetType);
+
+    // Select the best target (in <targetType> order) from the threat list that fulfill the following:
+    // - Not among the first <offset> entries in <targetType> order (or SelectTargetMethod::MaxThreat order,
+    //   if <targetType> is SelectTargetMethod::Random).
+    // - Within at most <dist> yards (if dist > 0.0f)
+    // - At least -<dist> yards away (if dist < 0.0f)
+    // - Is a player (if playerOnly = true)
+    // - Not the current tank (if withTank = false)
+    // - Has aura with ID <aura> (if aura > 0)
+    // - Does not have aura with ID -<aura> (if aura < 0)
+    Unit* SelectTarget(SelectTargetMethod targetType, uint32 position, float dist, bool playerOnly, int32 aura);
+
+    // Select the best target (in <targetType> order) satisfying <predicate> from the threat list.
+    // If <offset> is nonzero, the first <offset> entries in <targetType> order (or SelectTargetMethod::MaxThreat
+    // order, if <targetType> is SelectTargetMethod::Random) are skipped.
+    template <class PREDICATE>
+    Unit* SelectTarget(SelectTargetMethod targetType, uint32 position, PREDICATE const& predicate);
 
 
 

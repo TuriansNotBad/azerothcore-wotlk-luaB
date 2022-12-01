@@ -30,12 +30,16 @@ namespace LuaBindsAI {
     int Player_IsGroupLeader(lua_State* L);
     int Player_IsInGroup(lua_State* L);
     int Player_GetRole(lua_State* L);
+    int Player_GetPet(lua_State* L);
 
     // death related
     int Player_BuildPlayerRepop(lua_State* L);
     int Player_RepopAtGraveyard(lua_State* L);
     int Player_ResurrectPlayer(lua_State* L);
     int Player_SpawnCorpseBones(lua_State* L);
+
+    // death related
+    int Player_RemoveSpellCooldown(lua_State* L);
 
 	static const struct luaL_Reg Player_BindLib[]{
 
@@ -54,12 +58,16 @@ namespace LuaBindsAI {
         {"IsGroupLeader", Player_IsGroupLeader},
         {"IsInGroup", Player_IsInGroup},
         {"GetRole", Player_GetRole},
+        {"GetPet", Player_GetPet},
 
         // death related
         {"BuildPlayerRepop", Player_BuildPlayerRepop},
         {"RepopAtGraveyard", Player_RepopAtGraveyard},
         {"ResurrectPlayer", Player_ResurrectPlayer},
         {"SpawnCorpseBones", Player_SpawnCorpseBones},
+
+        // Combat
+        {"RemoveSpellCooldown", Player_RemoveSpellCooldown},
 
         {NULL, NULL}
 	};

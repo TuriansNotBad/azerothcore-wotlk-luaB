@@ -31,11 +31,13 @@ class Player;
 class Unit;
 class WorldSession;
 class WorldObject;
+class LuaBotAI;
 
 struct GameTele;
 
 class AC_GAME_API ChatHandler
 {
+    friend class LuaBotAI;
 public:
     explicit ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false) {}
     virtual ~ChatHandler() { }

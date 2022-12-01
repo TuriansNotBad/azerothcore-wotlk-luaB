@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "GameTime.h"
 #include "Common.h"
+#include "Group.h"
 #include "QueryHolder.h"
 #include "WorldSession.h"
 #include "LuaBindsBotCommon.h"
@@ -164,6 +165,10 @@ bool LuaBotManager::LogoutPlayerBotInternal(ObjectGuid guid)
         WorldSession* botWorldSessionPtr = bot->GetSession();
 
         if (bot && !botWorldSessionPtr->isLogingOut()) {
+
+            if (Group* g = bot->GetGroup())
+                g->RemoveMember(bot->GetGUID(), RemoveMethod::GROUP_REMOVEMETHOD_KICK);
+
             botWorldSessionPtr->LogoutPlayer(true); // this will delete the bot Player object and PlayerbotAI object
             delete botWorldSessionPtr;              // finally delete the bot's WorldSession
             return true;

@@ -49,6 +49,19 @@ public:
     void DoFinalize(T*);
     void DoReset(T*);
     void MovementInform(T*);
+    const Optional<ChaseRange> * GetRange() { return &_range; }
+    const Optional<ChaseAngle> * GetAngle() { return &_angle; }
+    void SetRange(float minR, float minT, float maxR, float maxT)
+    {
+        ChaseRange range(minR, minT, maxT, maxR);
+        _range = Optional<ChaseRange>(range);
+    }
+    void SetAngle(float angle, float tol)
+    {
+        ChaseAngle ang(angle, tol);
+        _angle = Optional<ChaseAngle>(ang);
+    }
+
 
     bool PositionOkay(T* owner, Unit* target, Optional<float> maxDistance, Optional<ChaseAngle> angle);
 
@@ -64,8 +77,8 @@ private:
     bool i_recalculateTravel;
 
     Optional<Position> _lastTargetPosition;
-    Optional<ChaseRange> const _range;
-    Optional<ChaseAngle> const _angle;
+    Optional<ChaseRange> _range;
+    Optional<ChaseAngle> _angle;
     bool _movingTowards = true;
     bool _mutualChase = true;
 };

@@ -17060,6 +17060,16 @@ void Unit::UpdateReactives(uint32 p_time)
     }
 }
 
+uint8 Unit::GetEnemyCountInRadiusAround(Unit* pTarget, float radius) const
+{
+    std::list<Unit*> targets;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(pTarget, this, radius);
+    Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    Cell::VisitAllObjects(pTarget, searcher, radius);
+    return targets.size();
+}
+
+
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
 {
     std::list<Unit*> targets;

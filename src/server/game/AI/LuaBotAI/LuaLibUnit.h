@@ -64,6 +64,51 @@ namespace LuaBindsAI {
     int Unit_IsAlive(lua_State* L);
     int Unit_IsDead(lua_State* L);
 
+    // combat related
+    int Unit_AddAura(lua_State* L);
+    int Unit_CastSpell(lua_State* L);
+    int Unit_ClearTarget(lua_State* L);
+    int Unit_GetAttackersTbl(lua_State* L);
+    int Unit_GetAttackRange(lua_State* L);
+    int Unit_GetAttackTimer(lua_State* L);
+    int Unit_GetAuraStacks(lua_State* L);
+    int Unit_GetCombatDistance(lua_State* L);
+    int Unit_GetCurrentSpellId(lua_State* L);
+    int Unit_GetEnemyCountInRadiusAround(lua_State* L);
+    int Unit_GetHealth(lua_State* L);
+    int Unit_GetHealthPercent(lua_State* L);
+    int Unit_GetMaxHealth(lua_State* L);
+    int Unit_GetMaxPower(lua_State* L);
+    int Unit_GetMeleeReach(lua_State* L);
+    int Unit_GetPower(lua_State* L);
+    int Unit_GetPowerPercent(lua_State* L);
+    int Unit_GetSpellCost(lua_State* L);
+    int Unit_GetShapeshiftForm(lua_State* L);
+    int Unit_GetThreat(lua_State* L);
+    int Unit_GetThreatTbl(lua_State* L);
+    int Unit_GetVictim(lua_State* L);
+    int Unit_GetVictimsInRange(lua_State* L);
+    int Unit_HasAura(lua_State* L);
+    int Unit_HasAuraBy(lua_State* L);
+    int Unit_HasAuraType(lua_State* L);
+    int Unit_HasObjInArc(lua_State* L);
+    int Unit_HasPosInArc(lua_State* L);
+    int Unit_InterruptSpell(lua_State* L);
+    int Unit_IsInCombat(lua_State* L);
+    int Unit_IsNonMeleeSpellCasted(lua_State* L);
+    int Unit_IsTargetInRangeOfSpell(lua_State* L);
+    int Unit_IsValidHostileTarget(lua_State* L);
+    int Unit_IsWithinLOSInMap(lua_State* L);
+    int Unit_RemoveAura(lua_State* L);
+    int Unit_RemoveSpellsCausingAura(lua_State* L);
+    int Unit_SetHealth(lua_State* L);
+    int Unit_SetHealthPercent(lua_State* L);
+    int Unit_SetMaxHealth(lua_State* L);
+    int Unit_SetMaxPower(lua_State* L);
+    int Unit_SetPower(lua_State* L);
+    int Unit_SetPowerPercent(lua_State* L);
+
+
 
     int Unit_Print(lua_State* L);
 
@@ -120,6 +165,57 @@ namespace LuaBindsAI {
         {"IsAlive", Unit_IsAlive},
         {"IsDead", Unit_IsDead},
 
+        // combat related
+        {"AddAura", Unit_AddAura},
+        {"CastSpell", Unit_CastSpell},
+        {"ClearTarget", Unit_ClearTarget},
+
+        {"GetAttackersTbl", Unit_GetAttackersTbl},
+        {"GetAttackRange", Unit_GetAttackRange},
+        {"GetAttackTimer", Unit_GetAttackTimer},
+        {"GetAuraStacks", Unit_GetAuraStacks},
+        {"GetCombatDistance", Unit_GetCombatDistance},
+        {"GetCurrentSpellId", Unit_GetCurrentSpellId},
+        {"GetEnemyCountInRadiusAround", Unit_GetEnemyCountInRadiusAround},
+
+        {"GetHealth", Unit_GetHealth},
+        {"GetHealthPercent", Unit_GetHealthPercent},
+        {"GetMaxHealth", Unit_GetMaxHealth},
+        {"GetMaxPower", Unit_GetMaxPower},
+
+        {"GetMeleeReach", Unit_GetMeleeReach},
+        {"GetPower", Unit_GetPower},
+        {"GetPowerPercent", Unit_GetPowerPercent},
+        {"GetShapeshiftForm", Unit_GetShapeshiftForm},
+        {"GetSpellCost", Unit_GetSpellCost},
+        {"GetThreat", Unit_GetThreat},
+        {"GetThreatTbl", Unit_GetThreatTbl},
+        {"GetVictim", Unit_GetVictim},
+        {"GetVictimsInRange", Unit_GetVictimsInRange},
+
+        {"HasAura", Unit_HasAura},
+        {"HasAuraBy", Unit_HasAuraBy},
+        {"HasAuraType", Unit_HasAuraType},
+        {"HasObjInArc", Unit_HasObjInArc},
+        {"HasPosInArc", Unit_HasPosInArc},
+
+        {"InterruptSpell", Unit_InterruptSpell},
+
+        {"IsInCombat", Unit_IsInCombat},
+        {"IsNonMeleeSpellCasted", Unit_IsNonMeleeSpellCasted},
+        {"IsTargetInRangeOfSpell", Unit_IsTargetInRangeOfSpell},
+        {"IsValidHostileTarget", Unit_IsValidHostileTarget},
+        {"IsWithinLOSInMap", Unit_IsWithinLOSInMap},
+
+        {"RemoveAura", Unit_RemoveAura},
+        {"RemoveSpellsCausingAura", Unit_RemoveSpellsCausingAura},
+
+        {"SetHealth", Unit_SetHealth},
+        {"SetHealthPercent", Unit_SetHealthPercent},
+        {"SetMaxHealth", Unit_SetMaxHealth},
+        {"SetMaxPower", Unit_SetMaxPower},
+        {"SetPower", Unit_SetPower},
+        {"SetPowerPercent", Unit_SetPowerPercent},
 
         {NULL, NULL}
 	};

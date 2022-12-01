@@ -4,6 +4,7 @@
 #include "LuaUtils.h"
 #include "Group.h"
 #include "Player.h"
+#include "Pet.h"
 #include "LuaBotAI.h"
 
 
@@ -247,6 +248,12 @@ int LuaBindsAI::Player_GetRole(lua_State* L) {
 }
 
 
+int LuaBindsAI::Player_GetPet(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    lua_pushunitornil(L, player->GetPet());
+    return 1;
+}
+
 
 // ===================================================
 // 2. Death
@@ -280,6 +287,23 @@ int LuaBindsAI::Player_SpawnCorpseBones(lua_State* L) {
     player->SpawnCorpseBones();
     return 0;
 }
+
+
+// ===================================================
+// 3. Combat
+// ===================================================
+
+
+int LuaBindsAI::Player_RemoveSpellCooldown(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    uint32 spellId = luaL_checkinteger(L, 2);
+    if (const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellId))
+        player->RemoveSpellCooldown(spellId);
+    else
+        luaL_error(L, "Unit.RemoveSpellCooldown spell doesn't exist. Id = %d", spellId);
+    return 0;
+}
+
 
 
 
