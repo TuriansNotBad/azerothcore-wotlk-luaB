@@ -14,8 +14,8 @@
 
 enum PartyBotSpells
 {
-    PB_SPELL_FOOD = 1131,
-    PB_SPELL_DRINK = 1137,
+    PB_SPELL_FOOD = 64354,
+    PB_SPELL_DRINK = 64354,
     PB_SPELL_AUTO_SHOT = 75,
     PB_SPELL_SHOOT_WAND = 5019,
     PB_SPELL_HONORLESS_TARGET = 2479,
@@ -70,6 +70,8 @@ Goal* LuaBotAI::AddTopGoal(int goalId, double life, std::vector<GoalParamP>& goa
 
 void LuaBotAI::Init() {
 
+    L = sLuaBotMgr.Lua();
+
     if (userDataRef == LUA_NOREF)
         CreateUD(L);
     if (userDataPlayerRef == LUA_NOREF)
@@ -86,6 +88,55 @@ void LuaBotAI::Init() {
 }
 
 
+void LuaBotAI::Reset(bool dropRefs) {
+
+    // clear goals
+    topGoal = Goal(-1, 0, Goal::NOPARAMS, nullptr, nullptr);
+    topGoal.SetTerminated(true);
+
+    goalManager = GoalManager();
+    logicManager = LogicManager(logicID);
+
+    // stop moving
+    me->GetMotionMaster()->Clear(false);
+    me->GetMotionMaster()->MoveIdle();
+
+    // unmount
+    if (me->IsMounted())
+        me->RemoveAurasByType(AuraType::SPELL_AURA_MOUNTED);
+
+    // unshapeshift
+    if (me->HasAuraType(AuraType::SPELL_AURA_MOD_SHAPESHIFT))
+        me->RemoveAurasByType(AuraType::SPELL_AURA_MOD_SHAPESHIFT);
+
+    // reset stand state
+    if (me->getStandState() != UnitStandStateType::UNIT_STAND_STATE_STAND)
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_STAND);
+
+    // reset speed
+    me->SetSpeedRate(UnitMoveType::MOVE_RUN, 1.0f);
+
+    // stop attacking
+    me->AttackStop();
+
+    // uncease updates
+    CeaseUpdates(false);
+
+    if (dropRefs) {
+        userTblRef = LUA_NOREF;
+        userDataRef = LUA_NOREF;
+        userDataPlayerRef = LUA_NOREF;
+    }
+    else {
+        // delete all refs
+        Unref(L);
+        UnrefPlayerUD(L);
+        UnrefUserTbl(L);
+    }
+
+}
+
+
 void LuaBotAI::Update(uint32 diff) {
     
     // were instructed not to update; likely caused by lua error
@@ -97,6 +148,13 @@ void LuaBotAI::Update(uint32 diff) {
         m_updateTimer.Reset(m_updateInterval);
     else
         return;
+
+    // Not initialized
+    if (userDataRef == LUA_NOREF || userDataPlayerRef == LUA_NOREF || userTblRef == LUA_NOREF) {
+        LOG_ERROR("luabots", "LuaAI Core: Attempt to update bot with uninitialized reference... [{}, {}, {}]. Ceasing.\n", userDataRef, userDataPlayerRef, userTblRef);
+        ceaseUpdates = true;
+        return;
+    }
 
     // Did we corrupt the registry
     if (userDataRef == userDataPlayerRef || userDataRef == userTblRef || userTblRef == userDataPlayerRef) {
@@ -156,13 +214,33 @@ void LuaBotAI::Update(uint32 diff) {
     // one of the managers called error state
     if (ceaseUpdates) {
         goalManager = GoalManager();
-        topGoal = Goal(0, 10.0, Goal::NOPARAMS, &goalManager, nullptr); // delete all goal objects
-        topGoal.SetTerminated(true);
+        //topGoal = Goal(0, 10.0, Goal::NOPARAMS, &goalManager, nullptr); // delete all goal objects
+        //topGoal.SetTerminated(true);
         // Reset AI as well to stop moving attacking, make it obivous there's an error...
         // Whisper master?
+        Reset(false);
     }
 
 
+
+}
+
+void LuaBotAI::HandleTeleportAck() {
+
+    me->GetMotionMaster()->Clear(true);
+    me->StopMoving();
+
+    if (me->IsBeingTeleportedNear())
+    {
+        WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 8 + 4 + 4);
+        p << me->GetGUID().WriteAsPacked();
+        p << (uint32) 0; // supposed to be flags? not used currently
+        p << (uint32) time(nullptr); // time - not currently used
+        me->GetSession()->HandleMoveTeleportAck(p);
+    }
+
+    else if (me->IsBeingTeleportedFar())
+        me->GetSession()->HandleMoveWorldportAck();
 
 }
 
@@ -447,7 +525,7 @@ void LuaBotAI::EquipRandomGear()
             continue;
 
         // Avoid low level items
-        if ((pProto->ItemLevel) < me->getLevel())
+        if ((pProto->ItemLevel + 10) < me->getLevel())
             continue;
 
         if (me->CanUseItem(pProto) != EQUIP_ERR_OK)
@@ -568,7 +646,6 @@ void LuaBotAI::EquipRandomGear()
         me->StoreNewItemInBestSlots(pProto->ItemId, 1);
     }
 }
-
 
 bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bool bAura) const
 {
@@ -691,7 +768,7 @@ bool LuaBotAI::HandleSummonCommand(Player* target)
     if (target->GetGUID() == me->GetGUID())
         return false;
 
-    return ChatHandler(target->GetSession()).ParseCommands("summon " + me->GetName());;
+    return ChatHandler(target->GetSession()).ParseCommands(".summon " + me->GetName());;
 }
 
 void LuaBotAI::GoPlayerCommand(Player* target) {
@@ -704,7 +781,7 @@ void LuaBotAI::GoPlayerCommand(Player* target) {
     me->SetTarget();
     topGoal = Goal(0, 0, Goal::NOPARAMS, nullptr, nullptr);
     topGoal.SetTerminated(true);
-    m_updateTimer.Reset(1000);
+    m_updateTimer.Reset(200);
     HandleSummonCommand(target);
 }
 

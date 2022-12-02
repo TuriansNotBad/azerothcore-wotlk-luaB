@@ -38,6 +38,8 @@ public:
 
 	GoalManager();
 
+    static void ClearGoalInfo() { goalInfoData.clear(); }
+
 	void Activate( lua_State* L, LuaBotAI* ai );
 	void ClearActivationStack() { while (!activationStack.empty()) activationStack.pop(); }
 

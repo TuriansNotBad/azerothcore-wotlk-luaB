@@ -23,6 +23,8 @@ public:
 
 	LogicManager(int logic_id);
 
+    static void ClearLogicInfo() { logicInfoData.clear(); }
+
 	void Init(lua_State* L, LuaBotAI* ai);
 	void Execute(lua_State* L, LuaBotAI* ai);
 

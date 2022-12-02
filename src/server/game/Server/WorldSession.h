@@ -1094,6 +1094,9 @@ public:                                                 // opcodes handlers
     TransactionCallback& AddTransactionCallback(TransactionCallback&& callback);
     SQLQueryHolderCallback& AddQueryHolderCallback(SQLQueryHolderCallback&& callback);
 
+    // lua bots
+    auto GetPacketQueue() { return &_recvQueue; }
+
 private:
     void ProcessQueryCallbacks();
 

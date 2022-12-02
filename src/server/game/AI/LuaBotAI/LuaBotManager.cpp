@@ -67,6 +67,10 @@ void LuaBotManager::LuaLoadFiles(const std::string& fpath) {
 void LuaBotManager::LuaLoadAll() {
     std::string fpath = "ai";
     if (L) lua_close(L); // kill old state
+    L = nullptr;
+
+    GoalManager::ClearGoalInfo();
+    LogicManager::ClearLogicInfo();
 
     L = luaL_newstate();
     luaL_openlibs(L); // replace with individual libraries later
@@ -205,16 +209,22 @@ void LuaBotManager::Update(uint32 diff) {
 
     // reload requested
     if (bLuaReload) {
+        sWorld->SendServerMessage(SERVER_MSG_STRING, "Lua reload started");
+
         bLuaCeaseUpdates = false;
         bLuaReload = false;
+
+        LuaLoadAll();
 
         // Code to reset each bot in the loop here
         for (auto bot : m_bots) {
             if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
                 // Reset bot movement, combat, goals.
+                botAI->Reset(true);
+                botAI->Init();
             }
         }
-        LuaLoadAll();
+        sWorld->SendServerMessage(SERVER_MSG_STRING, "Lua reload finished");
     }
 
     // lua crashed on initialization
@@ -228,6 +238,40 @@ void LuaBotManager::Update(uint32 diff) {
         }
     }
 
+    UpdateSessions();
+
+}
+
+void LuaBotManager::UpdateSessions()
+{
+    for (auto itr : m_bots)
+    {
+
+        Player* const bot = itr.second;
+
+        if (!bot || !bot->IsLuaBot())
+            return;
+
+        if (bot->IsBeingTeleported()) {
+            bot->GetLuaAI()->HandleTeleportAck();
+        }
+        else if (bot->IsInWorld())
+        {
+            HandleBotPackets(bot->GetSession());
+        }
+    }
+}
+
+void LuaBotManager::HandleBotPackets(WorldSession* session)
+{
+    WorldPacket* packet;
+    while (session->GetPacketQueue()->next(packet))
+    {
+        OpcodeClient opcode = static_cast<OpcodeClient>(packet->GetOpcode());
+        ClientOpcodeHandler const* opHandle = opcodeTable[opcode];
+        opHandle->Call(session, *packet);
+        delete packet;
+    }
 }
 
 

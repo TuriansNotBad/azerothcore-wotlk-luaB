@@ -34,7 +34,8 @@ public:
         {
             { "add",       HandleAddLuabCommand,      SEC_GAMEMASTER, Console::No },
             { "remove",    HandleRemoveLuabCommand,   SEC_GAMEMASTER, Console::No },
-            { "removeall", HandleRemoveAllLuabCommand,   SEC_GAMEMASTER, Console::No },
+            { "removeall", HandleRemoveAllLuabCommand,SEC_GAMEMASTER, Console::No },
+            { "reset",     HandleResetLuabCommand,    SEC_GAMEMASTER, Console::No },
         };
 
         static ChatCommandTable commandTable =
@@ -91,6 +92,12 @@ public:
     static bool HandleRemoveAllLuabCommand(ChatHandler* handler, Optional<bool> enableArg)
     {
         sLuaBotMgr.LogoutAllBots();
+        return true;
+    }
+
+    static bool HandleResetLuabCommand(ChatHandler* handler, Optional<bool> enableArg)
+    {
+        sLuaBotMgr.LuaReload();
         return true;
     }
 

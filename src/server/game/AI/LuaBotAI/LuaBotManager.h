@@ -6,6 +6,7 @@
 struct lua_State;
 class Player;
 class LuaBotLoginQueryHolder;
+class WorldSession;
 
 typedef std::unordered_map<ObjectGuid, Player*> LuaBotMap;
 
@@ -75,6 +76,8 @@ public:
     // Bot logic *********************************************
 
     void Update(uint32 diff);
+    void HandleBotPackets(WorldSession* session);
+    void UpdateSessions();
 
 };
 

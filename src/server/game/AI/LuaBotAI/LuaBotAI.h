@@ -110,8 +110,15 @@ public:
     void CeaseUpdates(bool cease = true) { ceaseUpdates = cease; }
     void SetUpdateInterval(uint32 n) { m_updateInterval = n; }
 
+    void HandleTeleportAck();
+
     void Init();
     void Update(uint32 diff);
+    /// <summary>
+    /// Resets bot to idle. Clears error flag. Removes shapeshift/mount auras.
+    /// Lua state must be valid when called. Init must be called before next update.
+    /// </summary>
+    void Reset(bool dropRefs);
 
     // Vmangos ported partybots funcs
 
