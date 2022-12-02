@@ -120,8 +120,41 @@ public:
     void AddItemToInventory(uint32 itemId, uint32 count = 1);
     void AddAmmo();
     bool DrinkAndEat();
+    void EquipRandomGear();
     uint8 GetAttackersInRangeCount(float range) const;
     Unit* GetMarkedTarget(RaidTargetIcon mark) const;
+    uint32 GetPrimaryItemStatForClassAndRole(uint8 playerClass, uint8 role)
+    {
+        switch (playerClass)
+        {
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_WARRIOR:
+        {
+            return ITEM_MOD_STRENGTH;
+        }
+        case CLASS_PALADIN:
+        {
+            return ((role == ROLE_HEALER) ? ITEM_MOD_INTELLECT : ITEM_MOD_STRENGTH);
+        }
+        case CLASS_HUNTER:
+        case CLASS_ROGUE:
+        {
+            return ITEM_MOD_AGILITY;
+        }
+        case CLASS_SHAMAN:
+        case CLASS_DRUID:
+        {
+            return ((role == ROLE_MDPS || role == ROLE_TANK) ? ITEM_MOD_AGILITY : ITEM_MOD_INTELLECT);
+        }
+        case CLASS_PRIEST:
+        case CLASS_MAGE:
+        case CLASS_WARLOCK:
+        {
+            return ITEM_MOD_INTELLECT;
+        }
+        }
+        return ITEM_MOD_STAMINA;
+    }
     void GoPlayerCommand(Player* target);
     bool HandleSummonCommand(Player* target);
     void Mount(bool toMount, uint32 mountSpell);

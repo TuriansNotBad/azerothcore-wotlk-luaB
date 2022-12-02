@@ -1,6 +1,7 @@
 
 #include "LuaBotAI.h"
 #include "LuaLibPlayer.h"
+#include "LuaUtils.h"
 #include "Player.h"
 #include "Group.h"
 #include "Spell.h"
@@ -347,7 +348,8 @@ void LuaBotAI::AddAmmo()
                 }
                 
                 ItemTemplate const* pAmmoProto = nullptr;
-                for (auto const& itr = sObjectMgr->GetItemTemplateStore()->begin(); itr != sObjectMgr->GetItemTemplateStore()->end();)
+                ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+                for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
                 {
                     
                     const ItemTemplate * pProto = &(itr->second);
@@ -375,6 +377,198 @@ void LuaBotAI::AddAmmo()
         }
     }
 }
+
+void LuaBotAI::EquipRandomGear()
+{
+    switch (me->getClass())
+    {
+    case CLASS_WARRIOR:
+    case CLASS_PALADIN:
+    {
+        if (me->getLevel() >= 40 && !me->HasSpell(750))
+            me->learnSpell(750, false, false);
+        break;
+    }
+    case CLASS_HUNTER:
+    case CLASS_SHAMAN:
+    {
+        if (me->getLevel() >= 40 && !me->HasSpell(8737))
+            me->learnSpell(8737, false, false);
+        break;
+    }
+    }
+
+    // Unequip current gear
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+        me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+
+    std::map<uint32 /*slot*/, std::vector<ItemTemplate const*>> itemsPerSlot;
+    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+    {
+        ItemTemplate const* pProto = &itr->second;
+
+        // Only gear and weapons
+        if (pProto->Class != ITEM_CLASS_WEAPON && pProto->Class != ITEM_CLASS_ARMOR)
+            continue;
+
+        // No tabards and shirts
+        if (pProto->InventoryType == INVTYPE_TABARD || pProto->InventoryType == INVTYPE_BODY)
+            continue;
+
+        // avoid high level items with no level requirement
+        if (pProto->ItemLevel > 6 && pProto->RequiredLevel < 2)
+            continue;
+
+        if (pProto->Name1.find("NPC Equip") != std::string::npos)
+            continue;
+        if (pProto->Name1.find("TEST") != std::string::npos)
+            continue;
+        if (pProto->Name1.find("Test") != std::string::npos)
+            continue;
+        if (pProto->Name1.find("Monster -") != std::string::npos)
+            continue;
+        if (pProto->Name1.find("OLD") != std::string::npos)
+            continue;
+        if (pProto->Name1.find("Deprecated") != std::string::npos)
+            continue;
+        if (pProto->Duration)
+            continue;
+        if (pProto->Class == ITEM_CLASS_WEAPON && !pProto->getDPS())
+            continue;
+
+        // green or higher only after 14
+        if (me->getLevel() > 14 && pProto->Quality < ITEM_QUALITY_UNCOMMON)
+            continue;
+
+        // blue or higher only after 30
+        if (me->getLevel() > 30 && pProto->Quality < ITEM_QUALITY_RARE)
+            continue;
+
+        // Avoid low level items
+        if ((pProto->ItemLevel) < me->getLevel())
+            continue;
+
+        if (me->CanUseItem(pProto) != EQUIP_ERR_OK)
+            continue;
+
+        if (pProto->RequiredReputationFaction && uint32(me->GetReputationRank(pProto->RequiredReputationFaction)) < pProto->RequiredReputationRank)
+            continue;
+
+        if (uint32 skill = pProto->GetSkill())
+        {
+
+            // Don't equip cloth items on warriors, etc unless bot is a healer
+            if (pProto->Class == ITEM_CLASS_ARMOR &&
+                pProto->InventoryType != INVTYPE_CLOAK &&
+                pProto->InventoryType != INVTYPE_SHIELD &&
+                skill != LuaBindsAI::GetHighestKnownArmorProficiency(me) &&
+                roleID != ROLE_HEALER)
+                continue;
+
+            // Fist weapons use unarmed skill calculations, but we must query fist weapon skill presence to use this item
+            if (pProto->SubClass == ITEM_SUBCLASS_WEAPON_FIST)
+                skill = SKILL_FIST_WEAPONS;
+            if (!me->GetSkillValue(skill))
+                continue;
+        }
+
+        uint8 slots[4];
+        LuaBindsAI::GetEquipSlotsForType(InventoryType(pProto->InventoryType), pProto->SubClass, slots, me->getClass(), me->CanDualWield());
+
+        for (uint8 slot : slots)
+        {
+            if (slot >= EQUIPMENT_SLOT_START && slot < EQUIPMENT_SLOT_END &&
+                !me->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            {
+                // Offhand checks
+                if (slot == EQUIPMENT_SLOT_OFFHAND)
+                {
+                    // Only allow shield in offhand for tanks
+                    if (pProto->InventoryType != INVTYPE_SHIELD &&
+                        roleID == ROLE_TANK && LuaBindsAI::IsShieldClass(me->getClass()))
+                        continue;
+
+                    // Only equip holdables on mana users
+                    if (pProto->InventoryType == INVTYPE_HOLDABLE &&
+                        roleID != ROLE_HEALER && roleID != ROLE_RDPS)
+                        continue;
+                }
+
+                itemsPerSlot[slot].push_back(pProto);
+
+                // Unique item
+                if (pProto->MaxCount == 1)
+                    break;
+            }
+        }
+    }
+
+
+
+    // Remove items that don't have our primary stat from the list
+    uint32 const primaryStat = GetPrimaryItemStatForClassAndRole(me->getClass(), roleID);
+    for (auto& itr : itemsPerSlot)
+    {
+        bool hasPrimaryStatItem = false;
+
+        for (auto const& pItem : itr.second)
+        {
+            for (auto const& stat : pItem->ItemStat)
+            {
+                if (stat.ItemStatType == primaryStat && stat.ItemStatValue > 0)
+                {
+                    hasPrimaryStatItem = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasPrimaryStatItem)
+        {
+            itr.second.erase(std::remove_if(itr.second.begin(), itr.second.end(),
+                [primaryStat](ItemTemplate const*& pItem)
+                {
+                    bool itemHasPrimaryStat = false;
+            for (auto const& stat : pItem->ItemStat)
+            {
+                if (stat.ItemStatType == primaryStat && stat.ItemStatValue > 0)
+                {
+                    itemHasPrimaryStat = true;
+                    break;
+                }
+            }
+
+            return !itemHasPrimaryStat;
+                }),
+                itr.second.end());
+        }
+    }
+
+
+    for (auto const& itr : itemsPerSlot)
+    {
+        // Don't equip offhand if using 2 handed weapon
+        if (itr.first == EQUIPMENT_SLOT_OFFHAND)
+        {
+            if (Item* pMainHandItem = me->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                if (pMainHandItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
+                    continue;
+        }
+
+        if (itr.second.empty())
+            continue;
+        
+        ItemTemplate const* pProto = LuaBindsAI::SelectRandomContainerElement(itr.second);
+        if (!pProto)
+            continue;
+
+        LuaBindsAI::SatisfyItemRequirements(me, pProto);
+        me->StoreNewItemInBestSlots(pProto->ItemId, 1);
+    }
+}
+
 
 bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bool bAura) const
 {

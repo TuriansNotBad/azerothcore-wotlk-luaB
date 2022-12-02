@@ -327,6 +327,16 @@ int LuaBindsAI::AI_GetRole(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_SetRole(lua_State* L) {
+    LuaBotAI** ai = AI_GetAIObject(L);
+    int roleID = luaL_checkinteger(L, 2);
+    if (roleID <= ROLE_INVALID || roleID > ROLE_HEALER)
+        luaL_error(L, "AI.SetRole - invalid role ID. Accepted values [1, %d]. Got %d", ROLE_HEALER, roleID);
+    (*ai)->SetRole(roleID);
+    return 0;
+}
+
+
 int LuaBindsAI::AI_GetGameTime(lua_State* L) {
     lua_pushinteger(L, getMSTime());
     return 1;
@@ -364,6 +374,16 @@ int LuaBindsAI::AI_SelectShieldTarget(lua_State* L) {
     float hpRate = luaL_checknumber(L, 2);
     lua_pushplayerornil(L, (*ai)->SelectShieldTarget(hpRate));
     return 1;
+}
+
+// -----------------------------------------------------------
+//                      Movement RELATED
+// -----------------------------------------------------------
+
+int LuaBindsAI::AI_EquipRandomGear(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    ai->EquipRandomGear();
+    return 0;
 }
 
 // -----------------------------------------------------------

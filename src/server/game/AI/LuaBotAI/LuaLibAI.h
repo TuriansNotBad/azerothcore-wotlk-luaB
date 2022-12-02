@@ -20,7 +20,9 @@ namespace LuaBindsAI {
     int AI_GetPlayer(lua_State* L);
 
     int AI_DrinkAndEat(lua_State* L);
+
     // combat related
+
     int AI_AddAmmo(lua_State* L);
     int AI_AttackAutoshot(lua_State* L);
     int AI_AttackStart(lua_State* L);
@@ -41,28 +43,36 @@ namespace LuaBindsAI {
     int AI_GetClass(lua_State* L);
     int AI_GetMarkedTarget(lua_State* L);
     int AI_GetRole(lua_State* L);
+    int AI_SetRole(lua_State* L);
     int AI_GetGameTime(lua_State* L);
     int AI_RunAwayFromTarget(lua_State* L);
     int AI_SelectPartyAttackTarget(lua_State* L);
     int AI_SelectNearestTarget(lua_State* L);
     int AI_SelectShieldTarget(lua_State* L);
 
+    // equip
+    int AI_EquipRandomGear(lua_State* L);
+
     // pet related
+
     int AI_SummonPetIfNeeded(lua_State* L);
     int AI_GetPet(lua_State* L);
     int AI_PetAttack(lua_State* L);
     int AI_PetCast(lua_State* L);
 
     // movement related
+
     int AI_GoName(lua_State* L);
     int AI_Mount(lua_State* L);
 
     // xp/level related
+
     int AI_InitTalentForLevel(lua_State* L);
     int AI_GiveLevel(lua_State* L);
     int AI_SetXP(lua_State* L);
 
     // death related
+
     int AI_ShouldAutoRevive(lua_State* L);
 
     static const struct luaL_Reg AI_BindLib[]{
@@ -95,11 +105,15 @@ namespace LuaBindsAI {
         {"GetClass", AI_GetClass},
         {"GetMarkedTarget", AI_GetMarkedTarget},
         {"GetRole", AI_GetRole},
+        {"SetRole", AI_SetRole},
         {"GetGameTime", AI_GetGameTime},
         {"RunAwayFromTarget", AI_RunAwayFromTarget},
         {"SelectPartyAttackTarget", AI_SelectPartyAttackTarget},
         {"SelectNearestTarget", AI_SelectNearestTarget},
         {"SelectShieldTarget", AI_SelectShieldTarget},
+
+        // equip
+        {"EquipRandomGear", AI_EquipRandomGear},
 
         // pet related
         {"SummonPetIfNeeded", AI_SummonPetIfNeeded},
