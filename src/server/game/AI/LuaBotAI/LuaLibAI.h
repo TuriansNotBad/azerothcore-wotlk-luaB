@@ -50,8 +50,22 @@ namespace LuaBindsAI {
     int AI_SelectNearestTarget(lua_State* L);
     int AI_SelectShieldTarget(lua_State* L);
 
+    // spell management
+    int AI_GetSpellChainFirst(lua_State* L);
+    int AI_GetSpellChainLast(lua_State* L);
+    int AI_GetSpellChainNext(lua_State* L);
+    int AI_GetSpellChainPrev(lua_State* L);
+    int AI_GetSpellName(lua_State* L);
+    int AI_GetSpellRank(lua_State* L);
+    int AI_GetSpellOfRank(lua_State* L);
+    int AI_GetSpellMaxRankForLevel(lua_State* L);
+    int AI_GetSpellMaxRankForMe(lua_State* L);
+
     // equip
     int AI_EquipRandomGear(lua_State* L);
+    int AI_EquipItem(lua_State* L);
+    int AI_EquipDestroyAll(lua_State* L);
+    int AI_EquipEnchant(lua_State* L);
 
     // pet related
 
@@ -112,8 +126,22 @@ namespace LuaBindsAI {
         {"SelectNearestTarget", AI_SelectNearestTarget},
         {"SelectShieldTarget", AI_SelectShieldTarget},
 
+        // spell management
+        {"GetSpellChainFirst", AI_GetSpellChainFirst},
+        {"GetSpellChainLast", AI_GetSpellChainLast},
+        {"GetSpellChainNext", AI_GetSpellChainNext},
+        {"GetSpellChainPrev", AI_GetSpellChainPrev},
+        {"GetSpellName", AI_GetSpellName},
+        {"GetSpellRank", AI_GetSpellRank},
+        {"GetSpellOfRank", AI_GetSpellOfRank},
+        {"GetSpellMaxRankForLevel", AI_GetSpellMaxRankForLevel},
+        {"GetSpellMaxRankForMe", AI_GetSpellMaxRankForMe},
+
         // equip
         {"EquipRandomGear", AI_EquipRandomGear},
+        {"EquipItem", AI_EquipItem},
+        {"EquipDestroyAll", AI_EquipDestroyAll},
+        {"EquipEnchant", AI_EquipEnchant},
 
         // pet related
         {"SummonPetIfNeeded", AI_SummonPetIfNeeded},

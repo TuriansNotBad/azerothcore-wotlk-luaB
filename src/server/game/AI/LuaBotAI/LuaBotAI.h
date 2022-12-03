@@ -5,6 +5,9 @@
 #include "LogicManager.h"
 #include "UnitAI.h"
 
+enum EnchantmentSlot;
+enum EquipmentSlots;
+
 enum LuaBotRole {
     ROLE_INVALID,
     ROLE_MDPS,
@@ -216,7 +219,20 @@ public:
     template <class PREDICATE>
     Unit* SelectTarget(SelectTargetMethod targetType, uint32 position, PREDICATE const& predicate);
 
+    // fussing over your bots. equip. spells.
+    uint32 GetSpellChainFirst(uint32 spellID);
+    uint32 GetSpellChainLast(uint32 spellID);
+    uint32 GetSpellChainPrev(uint32 spellID);
+    uint32 GetSpellChainNext(uint32 spellID);
+    uint32 GetSpellRank(uint32 spellID);
+    uint32 GetSpellMaxRankForMe(uint32 firstSpell);
+    uint32 GetSpellMaxRankForLevel(uint32 firstSpell, uint32 level);
+    uint32 GetSpellOfRank(uint32 firstSpell, uint32 rank);
+    std::string GetSpellName(uint32 spellID);
 
+    void EquipItem(uint32 itemID);
+    void EquipDestroyAll();
+    void EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges);
 
     // Testing
 

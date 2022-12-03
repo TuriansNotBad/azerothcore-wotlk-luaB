@@ -200,7 +200,7 @@ int LuaBindsAI::AI_GetChaseDist(lua_State* L) {
             }
         }
     }
-    lua_pushnumber(L, -1);
+    lua_pushnil(L);
     return 1;
 }
 
@@ -218,7 +218,7 @@ int LuaBindsAI::AI_GetChaseAngle(lua_State* L) {
             }
         }
     }
-    lua_pushnumber(L, -1);
+    lua_pushnil(L);
     return 1;
 }
 
@@ -376,15 +376,156 @@ int LuaBindsAI::AI_SelectShieldTarget(lua_State* L) {
     return 1;
 }
 
+
 // -----------------------------------------------------------
-//                      Movement RELATED
+//                Spell Management RELATED
 // -----------------------------------------------------------
+
+
+int LuaBindsAI::AI_GetSpellChainFirst(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellChainFirst(spellID);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellChainFirst: spell not found. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellChainLast(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellChainLast(spellID);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellChainLast: spell not found. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellChainNext(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellChainNext(spellID);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellChainNext: spell not found. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellChainPrev(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellChainPrev(spellID);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellChainPrev: spell not found. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellMaxRankForLevel(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    int level = luaL_checkinteger(L, 3);
+    uint32 result = ai->GetSpellMaxRankForLevel(spellID, level);
+    // this could be an error
+    if (result == 0 && !sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "AI.GetSpellMaxRankForLevel: spell doesn't exist. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellMaxRankForMe(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellMaxRankForMe(spellID);
+    // this could be an error
+    if (result == 0 && !sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "AI.GetSpellMaxRankForMe: spell doesn't exist. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellName(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    std::string result = ai->GetSpellName(spellID);
+    if (result.size() == 0)
+        luaL_error(L, "AI.GetSpellName: spell not found. %d", spellID);
+    lua_pushstring(L, result.c_str());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellOfRank(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    int rank = luaL_checkinteger(L, 3);
+    uint32 result = ai->GetSpellOfRank(spellID, rank);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellOfRank: error, check logs. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_GetSpellRank(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int spellID = luaL_checkinteger(L, 2);
+    uint32 result = ai->GetSpellRank(spellID);
+    if (result == 0)
+        luaL_error(L, "AI.GetSpellRank: spell not found. %d", spellID);
+    lua_pushinteger(L, result);
+    return 1;
+}
+
+
+// -----------------------------------------------------------
+//                      Equip RELATED
+// -----------------------------------------------------------
+
+int LuaBindsAI::AI_EquipItem(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int itemID = luaL_checkinteger(L, 2);
+    ai->EquipItem(itemID);
+    return 0;
+}
 
 int LuaBindsAI::AI_EquipRandomGear(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     ai->EquipRandomGear();
     return 0;
 }
+
+int LuaBindsAI::AI_EquipDestroyAll(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    ai->EquipDestroyAll();
+    return 0;
+}
+
+int LuaBindsAI::AI_EquipEnchant(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int enchantID = luaL_checkinteger(L, 2);
+    int islot = luaL_checkinteger(L, 3);
+    int iitemSlot = luaL_checkinteger(L, 4);
+    int duration = luaL_checkinteger(L, 5);
+    int charges = luaL_checkinteger(L, 6);
+
+    if (iitemSlot < EQUIPMENT_SLOT_START || iitemSlot >= EQUIPMENT_SLOT_END)
+        luaL_error(L, "AI.EquipEnchant: Invalid equipment slot. Allowed values - [%d, %d). Got %d", EQUIPMENT_SLOT_START, EQUIPMENT_SLOT_END, iitemSlot);
+
+    if (islot < PERM_ENCHANTMENT_SLOT || islot > MAX_ENCHANTMENT_SLOT)
+        luaL_error(L, "AI.EquipEnchant: Invalid enchantment slot. Allowed values - [%d, %d). Got %d", PERM_ENCHANTMENT_SLOT, MAX_ENCHANTMENT_SLOT, islot);
+
+    ai->EquipEnchant(enchantID, EnchantmentSlot(islot), EquipmentSlots(iitemSlot), duration, charges);
+    return 0;
+}
+
 
 // -----------------------------------------------------------
 //                      Pet RELATED

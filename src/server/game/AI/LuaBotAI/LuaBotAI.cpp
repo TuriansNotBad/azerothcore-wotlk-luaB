@@ -8,6 +8,7 @@
 #include "SpellAuraEffects.h"
 #include "Pet.h"
 #include "Chat.h"
+#include "Item.h"
 #include "LuaBotManager.h"
 #include "lua.hpp"
 
@@ -1110,7 +1111,7 @@ Unit* LuaBotAI::SelectTarget(SelectTargetMethod targetType, uint32 position, PRE
 }
 
 template <class PREDICATE>
-void LuaBotAI:: SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectTargetMethod targetType)
+void LuaBotAI::SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectTargetMethod targetType)
 {
     ThreatContainer::StorageType const& threatlist = me->GetThreatMgr().GetThreatList();
     if (threatlist.empty())
@@ -1135,7 +1136,284 @@ void LuaBotAI:: SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& 
         targetList.resize(maxTargets);
 }
 
+// ========================================================================
+// 3. Bot meddling. Equip. Spells.
+// ========================================================================
 
+
+uint32 LuaBotAI::GetSpellChainFirst(uint32 spellID) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellChainFirst: spell {} not found.", spellID);
+        return 0;
+    }
+
+    auto info_first = info_orig->GetFirstRankSpell();
+    if (!info_first)
+        return spellID;
+
+    return info_first->Id;
+
+}
+
+
+uint32 LuaBotAI::GetSpellChainLast(uint32 spellID) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellChainLast: spell {} not found.", spellID);
+        return 0;
+    }
+
+    auto info_last = info_orig->GetLastRankSpell();
+    if (!info_last)
+        return spellID;
+
+    return info_last->Id;
+
+}
+
+
+uint32 LuaBotAI::GetSpellChainNext(uint32 spellID) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellChainNext: spell {} not found.", spellID);
+        return 0;
+    }
+
+    auto info_next = info_orig->GetNextRankSpell();
+    if (!info_next)
+        return spellID;
+
+    return info_next->Id;
+
+}
+
+
+uint32 LuaBotAI::GetSpellChainPrev(uint32 spellID) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellChainPrev: spell {} not found.", spellID);
+        return 0;
+    }
+
+    auto info_prev = info_orig->GetPrevRankSpell();
+    if (!info_prev)
+        return spellID;
+
+    return info_prev->Id;
+
+}
+
+
+std::string LuaBotAI::GetSpellName(uint32 spellID) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellName: spell {} not found.", spellID);
+        return "";
+    }
+
+    return info_orig->SpellName[0];
+
+}
+
+
+uint32 LuaBotAI::GetSpellRank(uint32 spellID) {
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellRank: spell {} not found.", spellID);
+        return 0;
+    }
+    return info_orig->GetRank();
+}
+
+
+uint32 LuaBotAI::GetSpellOfRank(uint32 firstSpell, uint32 rank) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(firstSpell);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellOfRank: spell {} not found.", firstSpell);
+        return 0;
+    }
+
+    // is there a chain at all
+    auto info_first = info_orig->GetFirstRankSpell();
+    auto info_last = info_orig->GetLastRankSpell();
+    if (!info_first || !info_last) {
+
+        // if they wanted rank 1 return what was given
+        if (info_orig->GetRank() == rank)
+            return info_orig->Id;
+        // error
+        LOG_ERROR("luabots", "GetSpellOfRank: spell {} does not have any ranks.", firstSpell);
+        return 0;
+
+    }
+
+    auto info_next = info_first;
+    while (true) {
+
+        // found it?
+        if (info_next->GetRank() == rank)
+            return info_next->Id;
+
+        // there is no spell of this rank
+        if (info_next->Id == info_last->Id) {
+            LOG_ERROR("luabots", "GetSpellOfRank: spell {} does not have rank {}.", firstSpell, rank);
+            return 0;
+        }
+
+        info_next = info_next->GetNextRankSpell();
+        // weird error?
+        if (!info_next) {
+            LOG_ERROR("luabots", "GetSpellOfRank: spell {} failed to find spell of next rank.", firstSpell);
+            return 0;
+        }
+
+    }
+
+    // unreachable
+    return 0;
+
+}
+
+
+uint32 LuaBotAI::GetSpellMaxRankForLevel(uint32 spellID, uint32 level) {
+
+    auto info_orig = sSpellMgr->GetSpellInfo(spellID);
+    // spell not found
+    if (!info_orig) {
+        LOG_ERROR("luabots", "GetSpellMaxRankForLevel: spell {} not found.", spellID);
+        return 0;
+    }
+
+    // is there a chain at all
+    auto info_first = info_orig->GetFirstRankSpell();
+    auto info_last = info_orig->GetLastRankSpell();
+
+    // looks like there is only one rank
+    if (!info_first || !info_last)
+        return spellID;
+
+    // too low level in general?
+    if (level < info_first->SpellLevel)
+        return 0;
+
+    auto info_final = info_first;
+    auto info_next = info_first;
+    while (level >= info_next->SpellLevel) {
+
+        // we've ran out of ranks
+        if (info_next->Id == info_last->Id)
+            return info_next->Id;
+
+        // update result
+        info_final = info_next;
+
+        info_next = info_next->GetNextRankSpell();
+        // weird error?
+        if (!info_next) {
+            LOG_ERROR("luabots", "GetSpellMaxRankForLevel: spell {} failed to find spell of next rank.", spellID);
+            return 0;
+        }
+
+    }
+
+    return info_final->Id;
+
+}
+
+
+uint32 LuaBotAI::GetSpellMaxRankForMe(uint32 spellID) {
+    return GetSpellMaxRankForLevel(spellID, me->getLevel());
+}
+
+
+void LuaBotAI::EquipDestroyAll() {
+
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+        me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+}
+
+
+void LuaBotAI::EquipItem(uint32 itemID) {
+
+    // check if found
+    const ItemTemplate* itemTemplate = sObjectMgr->GetItemTemplate(itemID);
+    if (!itemTemplate) {
+        LOG_ERROR("luabots", "EquipItem item not found {}", itemID);
+        return;
+    }
+
+    // armor and weapons only?
+    if (itemTemplate->Class != ITEM_CLASS_ARMOR && itemTemplate->Class != ITEM_CLASS_WEAPON && itemTemplate->Class != ITEM_CLASS_GLYPH)
+        return;
+
+    // check if item already equipped and item is unique (can only equip N of)
+    if (itemTemplate->MaxCount > 0) {
+
+        // let's count
+        uint8 count = 0;
+
+        for (uint8 i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+            if (auto item = me->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                if (item->GetEntry() == itemID)
+                    count++;
+
+        if (count >= itemTemplate->MaxCount) {
+            LOG_ERROR("luabots", "EquipItem attempt to equip item past max count. Count/Max = {}/{}, itemID = {}.", count, itemTemplate->MaxCount, itemID);
+            return;
+        }
+
+    }
+
+    // check applicable slots
+    uint8 slots[4];
+    LuaBindsAI::GetEquipSlotsForType(InventoryType(itemTemplate->InventoryType), itemTemplate->SubClass, slots, me->getClass(), me->CanDualWield());
+
+    // check if any slot is free
+    int freeSlot = -1;
+    for (uint8 slot : slots)
+        if (slot >= EQUIPMENT_SLOT_START && slot < EQUIPMENT_SLOT_END && !me->GetItemByPos(INVENTORY_SLOT_BAG_0, slot)) {
+            freeSlot = slot;
+            break;
+        }
+
+    // nothing free, destroy;
+    if (freeSlot == -1 && slots[0] >= EQUIPMENT_SLOT_START && slots[0] < EQUIPMENT_SLOT_END) {
+        me->DestroyItem(INVENTORY_SLOT_BAG_0, slots[0], true);
+        freeSlot = slots[0];
+    }
+
+    LuaBindsAI::SatisfyItemRequirements(me, itemTemplate);
+    me->StoreNewItemInBestSlots(itemID, 1);
+
+}
+
+
+void LuaBotAI::EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges) {
+
+    Item* item = me->GetItemByPos(INVENTORY_SLOT_BAG_0, itemSlot);
+    if (!item) {
+        LOG_ERROR("luabots", "EquipEnchant: Attempt to enchant an empty slot {}", itemSlot);
+        return;
+    }
+
+    item->SetEnchantment(slot, enchantID, duration, charges);
+
+}
 
 // TESTING
 
