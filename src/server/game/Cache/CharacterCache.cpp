@@ -379,3 +379,12 @@ ObjectGuid CharacterCache::GetCharacterGroupGuidByGuid(ObjectGuid guid) const
 
     return itr->second.GroupGuid;
 }
+
+void CharacterCache::GetCharacterListFromAccount(uint32 accountId, std::list<ObjectGuid>& list) const
+{
+
+    for (auto itr : _characterCacheStore)
+        if (itr.second.AccountId == accountId)
+            list.push_back(itr.second.Guid);
+
+}

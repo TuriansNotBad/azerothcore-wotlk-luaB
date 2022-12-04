@@ -69,6 +69,7 @@ class AC_GAME_API CharacterCache
         void UpdateCharacterGroup(ObjectGuid const& guid, ObjectGuid groupGUID);
         void ClearCharacterGroup(ObjectGuid const& guid) { UpdateCharacterGroup(guid, ObjectGuid::Empty); };
 
+        void GetCharacterListFromAccount(uint32 accountId, std::list<ObjectGuid>& list) const;
         [[nodiscard]] ObjectGuid GetCharacterGuidByName(std::string const& name) const;
         bool GetCharacterNameByGuid(ObjectGuid guid, std::string& name) const;
         [[nodiscard]] uint32 GetCharacterTeamByGuid(ObjectGuid guid) const;

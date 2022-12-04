@@ -21,6 +21,9 @@ namespace LuaBindsAI {
 
     int AI_DrinkAndEat(lua_State* L);
 
+    int AI_IsInitialized(lua_State* L);
+    int AI_IsReady(lua_State* L);
+
     // combat related
 
     int AI_AddAmmo(lua_State* L);
@@ -66,6 +69,7 @@ namespace LuaBindsAI {
     int AI_EquipItem(lua_State* L);
     int AI_EquipDestroyAll(lua_State* L);
     int AI_EquipEnchant(lua_State* L);
+    int AI_EquipFindItemByName(lua_State* L);
 
     // pet related
 
@@ -98,6 +102,8 @@ namespace LuaBindsAI {
 		{"GetPlayer", AI_GetPlayer},
 
         {"DrinkAndEat", AI_DrinkAndEat},
+        {"IsInitialized", AI_IsInitialized},
+        {"IsReady", AI_IsReady},
         // combat related
         {"AddAmmo", AI_AddAmmo},
         {"AttackAutoshot", AI_AttackAutoshot},
@@ -142,6 +148,7 @@ namespace LuaBindsAI {
         {"EquipItem", AI_EquipItem},
         {"EquipDestroyAll", AI_EquipDestroyAll},
         {"EquipEnchant", AI_EquipEnchant},
+        {"EquipFindItemByName", AI_EquipFindItemByName},
 
         // pet related
         {"SummonPetIfNeeded", AI_SummonPetIfNeeded},

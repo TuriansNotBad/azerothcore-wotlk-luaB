@@ -109,6 +109,20 @@ int LuaBindsAI::AI_DrinkAndEat(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_IsReady(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->IsReady());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_IsInitialized(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->IsInitalized());
+    return 1;
+}
+
+
 // -----------------------------------------------------------
 //                      Combat RELATED
 // -----------------------------------------------------------
@@ -305,7 +319,7 @@ int LuaBindsAI::AI_GetAttackersInRangeCount(lua_State* L) {
 
 int LuaBindsAI::AI_GetClass(lua_State* L) {
     LuaBotAI** ai = AI_GetAIObject(L);
-    lua_pushinteger(L, (*ai)->GetRole());
+    lua_pushinteger(L, (*ai)->me->getClass());
     return 1;
 }
 
@@ -526,6 +540,12 @@ int LuaBindsAI::AI_EquipEnchant(lua_State* L) {
     return 0;
 }
 
+int LuaBindsAI::AI_EquipFindItemByName(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    std::string name(luaL_checkstring(L, 2));
+    lua_pushinteger(L, ai->EquipFindItemByName(name));
+    return 1;
+}
 
 // -----------------------------------------------------------
 //                      Pet RELATED

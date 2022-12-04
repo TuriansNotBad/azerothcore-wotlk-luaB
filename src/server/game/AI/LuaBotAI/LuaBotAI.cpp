@@ -11,6 +11,7 @@
 #include "Item.h"
 #include "LuaBotManager.h"
 #include "lua.hpp"
+#include "AccountMgr.h"
 
 
 enum PartyBotSpells
@@ -36,6 +37,7 @@ const char* LuaBotAI::MTNAME = "LuaObject.AI";
 LuaBotAI::LuaBotAI(Player* me, Player* master, int logicID) :
     me(me),
     master(master),
+    m_initialized(false),
 
     ceaseUpdates(false),
     m_updateInterval(50),
@@ -85,6 +87,7 @@ void LuaBotAI::Init() {
     }
 
     logicManager.Init(L, this);
+    m_initialized = true;
 
 }
 
@@ -121,7 +124,7 @@ void LuaBotAI::Reset(bool dropRefs) {
     me->AttackStop();
 
     // uncease updates
-    CeaseUpdates(false);
+    // CeaseUpdates(false);
 
     if (dropRefs) {
         userTblRef = LUA_NOREF;
@@ -134,6 +137,7 @@ void LuaBotAI::Reset(bool dropRefs) {
         UnrefPlayerUD(L);
         UnrefUserTbl(L);
     }
+    m_initialized = false;
 
 }
 
@@ -150,6 +154,19 @@ void LuaBotAI::Update(uint32 diff) {
     else
         return;
 
+    // hardcoded cease all logic ID
+    if (logicID == -1) return;
+
+    // bad pointers
+    if (!me || !master) return;
+
+    // unsafe to handle
+    if (!me->IsInWorld() || me->IsBeingTeleported() || me->isBeingLoaded())
+        return;
+
+    if (!m_initialized)
+        Init();
+
     // Not initialized
     if (userDataRef == LUA_NOREF || userDataPlayerRef == LUA_NOREF || userTblRef == LUA_NOREF) {
         LOG_ERROR("luabots", "LuaAI Core: Attempt to update bot with uninitialized reference... [{}, {}, {}]. Ceasing.\n", userDataRef, userDataPlayerRef, userTblRef);
@@ -164,13 +181,6 @@ void LuaBotAI::Update(uint32 diff) {
         return;
     }
 
-    // bad pointers
-    if (!me || !master) return;
-    // hardcoded cease all logic ID
-    if (logicID == -1) return;
-    // we're not available for interactions
-    if (!me->IsInWorld() || me->IsBeingTeleported() || me->isBeingLoaded())
-        return;
     // master not available, do not update
     if (!master->IsInWorld() || master->IsBeingTeleported() || master->isBeingLoaded())
         return;
@@ -225,6 +235,8 @@ void LuaBotAI::Update(uint32 diff) {
 
 
 }
+
+bool LuaBotAI::IsReady() { return IsInitalized() && me->IsInWorld() && !me->IsBeingTeleported() && !me->isBeingLoaded(); }
 
 void LuaBotAI::HandleTeleportAck() {
 
@@ -1344,6 +1356,25 @@ void LuaBotAI::EquipDestroyAll() {
 
     for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
         me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+}
+
+
+uint32 LuaBotAI::EquipFindItemByName(const std::string& name) {
+
+    auto result = sObjectMgr->GetItemTemplateStore();
+
+    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
+    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr) {
+
+        ItemTemplate item = itr->second;
+        if (item.Name1.find(name) != std::string::npos)
+            return item.ItemId;
+
+    }
+    
+
+    return 0;
 
 }
 

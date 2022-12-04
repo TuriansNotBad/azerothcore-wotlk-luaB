@@ -59,6 +59,8 @@ class LuaBotAI {
     int userDataPlayerRef;
     int userTblRef;
 
+    bool m_initialized;
+
     // managers
 
     Goal topGoal;
@@ -106,6 +108,9 @@ public:
     Goal* GetTopGoal() { return &topGoal; };
 
     // The actual logic
+
+    bool IsInitalized() { return m_initialized; }
+    bool IsReady();
 
     int GetRole() { return roleID; }
     void SetRole(int n) { roleID = n; }
@@ -230,6 +235,7 @@ public:
     uint32 GetSpellOfRank(uint32 firstSpell, uint32 rank);
     std::string GetSpellName(uint32 spellID);
 
+    uint32 EquipFindItemByName(const std::string& name);
     void EquipItem(uint32 itemID);
     void EquipDestroyAll();
     void EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges);

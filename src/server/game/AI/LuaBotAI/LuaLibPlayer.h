@@ -19,6 +19,8 @@ namespace LuaBindsAI {
 
     int Player_AddItem(lua_State* L);
     int Player_EquipItem(lua_State* L);
+    int Player_GetAI(lua_State* L);
+    int Player_IsLuaBot(lua_State* L);
 
     // party related
     int Player_GetGroupAttackersTbl(lua_State* L);
@@ -47,6 +49,9 @@ namespace LuaBindsAI {
 
         {"AddItem", Player_AddItem},
         {"EquipItem", Player_EquipItem},
+
+        {"GetAI", Player_GetAI},
+        {"IsLuaBot", Player_IsLuaBot},
 
         // party related
         {"GetGroupAttackersTbl", Player_GetGroupAttackersTbl},

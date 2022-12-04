@@ -77,6 +77,14 @@ void LuaBindsAI::SatisfyItemRequirements(Player* me, ItemTemplate const* pItem)
     if (pItem->RequiredSpell && !me->HasSpell(pItem->RequiredSpell))
         me->learnSpell(pItem->RequiredSpell, false, false);
 
+    // proficiency
+    if (pItem->GetSkill()) {
+        uint32 skill = pItem->GetSkill();
+        //if (skill == SKILL_MAIL)
+            //me->learnSpell()
+        me->SetSkill(skill, 1, me->GetMaxSkillValueForLevel(), me->GetMaxSkillValueForLevel());
+    }
+
     // Learn required profession
     if (pItem->RequiredSkill && (!me->HasSkill(pItem->RequiredSkill) || (me->GetSkillValue(pItem->RequiredSkill) < pItem->RequiredSkillRank)))
         me->SetSkill(pItem->RequiredSkill, pItem->RequiredSkillRank, me->GetMaxSkillValueForLevel(), me->GetMaxSkillValueForLevel());

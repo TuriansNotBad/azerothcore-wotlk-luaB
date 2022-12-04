@@ -155,7 +155,7 @@ void LuaBotManager::OnBotLogin(Player* bot) {
     LuaBotAI* botAI = bot->GetLuaAI();
     if (!botAI) return;
 
-    botAI->Init();
+    // botAI->Init();
 
 }
 
@@ -221,7 +221,7 @@ void LuaBotManager::Update(uint32 diff) {
             if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
                 // Reset bot movement, combat, goals.
                 botAI->Reset(true);
-                botAI->Init();
+                botAI->CeaseUpdates(false);
             }
         }
         sWorld->SendServerMessage(SERVER_MSG_STRING, "Lua reload finished");

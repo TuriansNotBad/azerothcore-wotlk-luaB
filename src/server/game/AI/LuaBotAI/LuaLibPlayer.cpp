@@ -99,7 +99,25 @@ int LuaBindsAI::Player_EquipItem(lua_State* L) {
 }
 
 
+int LuaBindsAI::Player_GetAI(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    // nothing to give
+    if (!player->IsLuaBot())
+        return 0;
+    LuaBotAI* ai = player->GetLuaAI();
+    // weird
+    if (!ai)
+        return 0;
+    ai->PushUD(L);
+    return 1;
+}
 
+
+int LuaBindsAI::Player_IsLuaBot(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    lua_pushboolean(L, player->IsLuaBot());
+    return 1;
+}
 
 
 // ===================================================
@@ -125,6 +143,11 @@ int LuaBindsAI::Player_GetGroupAttackersTbl(lua_State* L) {
     lua_newtable(L);
     int tblIdx = 1;
     Group* pGroup = player->GetGroup();
+
+    // no group, return empty table!
+    if (!pGroup)
+        return 1;
+
     //printf("Fetching attacker tbl\n");
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* pMember = itr->GetSource()) {
@@ -156,7 +179,11 @@ int LuaBindsAI::Player_GetGroupMemberCount(lua_State* L) {
 int LuaBindsAI::Player_GetGroupTank(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
     Group* pGroup = player->GetGroup();
-    //printf("Fetching attacker tbl\n");
+
+    // no group, cancel
+    if (!pGroup)
+        return 0;
+
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* pMember = itr->GetSource())
             if (LuaBotAI* pAI = pMember->GetLuaAI())
@@ -175,6 +202,11 @@ int LuaBindsAI::Player_GetGroupTbl(lua_State* L) {
     lua_newtable(L);
     int tblIdx = 1;
     Group* pGroup = player->GetGroup();
+
+    // no group, return empty table!
+    if (!pGroup)
+        return 1;
+
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* pMember = itr->GetSource()) {
             if (pMember == player) continue;
@@ -192,6 +224,11 @@ int LuaBindsAI::Player_GetGroupThreatTbl(lua_State* L) {
     lua_newtable(L);
     int tblIdx = 1;
     Group* pGroup = player->GetGroup();
+
+    // no group, return empty table!
+    if (!pGroup)
+        return 1;
+
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* pMember = itr->GetSource()) {
             //if (pMember == player) continue;
