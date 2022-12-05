@@ -153,7 +153,7 @@ void LuaBotAI::Update(uint32 diff) {
         m_updateTimer.Reset(m_updateInterval);
     else
         return;
-
+    
     // hardcoded cease all logic ID
     if (logicID == -1) return;
 

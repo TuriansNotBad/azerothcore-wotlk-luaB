@@ -311,7 +311,7 @@ int LuaBindsAI::Unit_GetGroundHeight(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     float x = luaL_checknumber(L, 2);
     float y = luaL_checknumber(L, 3);
-    float z;
+    float z = unit->GetPositionZ();
     unit->UpdateGroundPositionZ(x, y, z);
     lua_pushnumber(L, z);
     return 1;
@@ -346,6 +346,33 @@ int LuaBindsAI::Unit_GetNearPointAroundPosition(lua_State* L) {
 
     return 3;
 
+}
+
+
+int LuaBindsAI::Unit_GetForwardVector(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float ori = unit->GetOrientation();
+    lua_newtable(L);
+    lua_pushnumber(L, std::cos(ori));
+    lua_setfield(L, -2, "x");
+    lua_pushnumber(L, std::sin(ori));
+    lua_setfield(L, -2, "y");
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetOrientation(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushnumber(L, unit->GetOrientation());
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_SetOrientation(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float ori = luaL_checknumber(L, 2);
+    unit->SetOrientation(ori);
+    return 0;
 }
 
 

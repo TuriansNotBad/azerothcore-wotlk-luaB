@@ -17,10 +17,21 @@ namespace LuaBindsAI {
     // 
     int Player_InBattleGround(lua_State* L);
 
+    //equip
+
     int Player_AddItem(lua_State* L);
     int Player_EquipItem(lua_State* L);
+
+    // spells
+
+    int Player_LearnSpell(lua_State* L);
+    int Player_HasSpell(lua_State* L);
+
+    //ai
+
     int Player_GetAI(lua_State* L);
     int Player_IsLuaBot(lua_State* L);
+    int Player_IsReady(lua_State* L);
 
     // party related
     int Player_GetGroupAttackersTbl(lua_State* L);
@@ -47,11 +58,18 @@ namespace LuaBindsAI {
 
         {"InBattleGround", Player_InBattleGround},
 
+        // equip
         {"AddItem", Player_AddItem},
         {"EquipItem", Player_EquipItem},
 
+        // spells
+        {"LearnSpell", Player_LearnSpell},
+        {"HasSpell", Player_HasSpell},
+
+        // ai
         {"GetAI", Player_GetAI},
         {"IsLuaBot", Player_IsLuaBot},
+        {"IsReady", Player_IsReady},
 
         // party related
         {"GetGroupAttackersTbl", Player_GetGroupAttackersTbl},

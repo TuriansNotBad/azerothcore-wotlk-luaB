@@ -499,6 +499,85 @@ int LuaBindsAI::AI_GetSpellRank(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_GiveAllTalents(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+
+    // from cs_learn.cpp
+    Player* player = ai->me;
+    uint32 classMask = player->getClassMask();
+
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+    {
+        TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        if (!talentInfo)
+            continue;
+
+        TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+        if (!talentTabInfo)
+            continue;
+
+        if ((classMask & talentTabInfo->ClassMask) == 0)
+            continue;
+
+        // xinef: search highest talent rank
+        uint32 spellId = 0;
+        uint8 rankId = MAX_TALENT_RANK;
+        for (int8 rank = MAX_TALENT_RANK - 1; rank >= 0; --rank)
+        {
+            if (talentInfo->RankID[rank] != 0)
+            {
+                rankId = rank;
+                spellId = talentInfo->RankID[rank];
+                break;
+            }
+        }
+
+        // xinef: some errors?
+        if (!spellId || rankId == MAX_TALENT_RANK)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
+            continue;
+
+        player->LearnTalent(talentInfo->TalentID, rankId, true);
+    }
+
+    player->SetFreeTalentPoints(0);
+    player->SendTalentsInfoData(false);
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_HasSpell(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 spellID = luaL_checkinteger(L, 2);
+    if (!sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "AI.HasSpell: spell doesn't exist %d", spellID);
+    lua_pushboolean(L, ai->me->HasSpell(spellID));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_LearnSpell(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 spellID = luaL_checkinteger(L, 2);
+    if (!sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "AI.LearnSpell: spell doesn't exist %d", spellID);
+    ai->me->learnSpell(spellID);
+    return 0;
+}
+
+
+int LuaBindsAI::AI_ResetTalents(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->me->resetTalents(true));
+    return 1;
+}
+
+
+
 // -----------------------------------------------------------
 //                      Equip RELATED
 // -----------------------------------------------------------

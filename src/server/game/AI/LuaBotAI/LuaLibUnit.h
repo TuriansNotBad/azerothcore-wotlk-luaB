@@ -52,13 +52,16 @@ namespace LuaBindsAI {
     int Unit_GetGroundHeight(lua_State* L);
     int Unit_GetMapId(lua_State* L);
     int Unit_GetNearPointAroundPosition(lua_State* L);
+    int Unit_GetForwardVector(lua_State* L);
     int Unit_GetPosition(lua_State* L);
+    int Unit_GetOrientation(lua_State* L);
+    int Unit_SetOrientation(lua_State* L);
     int Unit_GetZoneId(lua_State* L);
     int Unit_IsInWorld(lua_State* L);
     int Unit_IsWithinLOSInMap(lua_State* L);
     int Unit_SetFacingTo(lua_State* L);
     int Unit_SetFacingToObject(lua_State* L);
-
+    
     // death related
     int Unit_GetDeathState(lua_State* L);
     int Unit_IsAlive(lua_State* L);
@@ -153,6 +156,9 @@ namespace LuaBindsAI {
         {"GetGroundHeight", Unit_GetGroundHeight},
         {"GetMapId", Unit_GetMapId},
         {"GetNearPointAroundPosition", Unit_GetNearPointAroundPosition},
+        {"GetForwardVector", Unit_GetForwardVector},
+        {"GetOrientation", Unit_GetOrientation},
+        {"SetOrientation", Unit_SetOrientation},
         {"GetPosition", Unit_GetPosition},
         {"GetZoneId", Unit_GetZoneId},
         {"IsInWorld", Unit_IsInWorld},

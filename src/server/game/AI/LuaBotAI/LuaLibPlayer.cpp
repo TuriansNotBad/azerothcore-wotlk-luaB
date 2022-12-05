@@ -55,7 +55,7 @@ int LuaBindsAI::Player_InBattleGround(lua_State* L) {
 }
 
 // ===================================================
-// 0. Inventory
+// 0. Inventory, AI, Spell
 // ===================================================
 
 int LuaBindsAI::Player_AddItem(lua_State* L) {
@@ -117,6 +117,43 @@ int LuaBindsAI::Player_IsLuaBot(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
     lua_pushboolean(L, player->IsLuaBot());
     return 1;
+}
+
+
+int LuaBindsAI::Player_IsReady(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    // if bot check of bot initialized
+    if (player->IsLuaBot() && !player->GetLuaAI()->IsInitalized()) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    // is safe to use object
+    if (!player->IsInWorld() || player->IsBeingTeleported() || player->isBeingLoaded()) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    lua_pushboolean(L, true);
+    return 1;
+}
+
+
+int LuaBindsAI::Player_HasSpell(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    uint32 spellID = luaL_checkinteger(L, 2);
+    if (!sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "Player.HasSpell: spell doesn't exist %d", spellID);
+    lua_pushboolean(L, player->HasSpell(spellID));
+    return 1;
+}
+
+
+int LuaBindsAI::Player_LearnSpell(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    uint32 spellID = luaL_checkinteger(L, 2);
+    if (!sSpellMgr->GetSpellInfo(spellID))
+        luaL_error(L, "Player.LearnSpell: spell doesn't exist %d", spellID);
+    player->learnSpell(spellID);
+    return 0;
 }
 
 
@@ -199,6 +236,19 @@ int LuaBindsAI::Player_GetGroupTank(lua_State* L) {
 // Builds a table of all group members userdatas
 int LuaBindsAI::Player_GetGroupTbl(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
+
+    bool bots_only = false;
+    bool exclude_self = true;
+    bool safe_only = false;
+    if (lua_gettop(L) > 1)
+        bots_only = luaL_checkboolean(L, 2);
+
+    if (lua_gettop(L) > 2)
+        exclude_self = luaL_checkboolean(L, 3);
+
+    if (lua_gettop(L) > 3)
+        safe_only = luaL_checkboolean(L, 4);
+
     lua_newtable(L);
     int tblIdx = 1;
     Group* pGroup = player->GetGroup();
@@ -209,7 +259,16 @@ int LuaBindsAI::Player_GetGroupTbl(lua_State* L) {
 
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         if (Player* pMember = itr->GetSource()) {
-            if (pMember == player) continue;
+
+            if (pMember == player && exclude_self) continue;
+            if (bots_only && !pMember->IsLuaBot()) continue;
+
+            if (safe_only) {
+                if (!pMember->IsInWorld() || pMember->IsBeingTeleported() || pMember->isBeingLoaded())
+                    continue;
+                if (pMember->IsLuaBot() && !pMember->GetLuaAI()->IsInitalized())
+                    continue;
+            }
             Player_CreateUD(pMember, L);
             lua_seti(L, -2, tblIdx); // stack[1][tblIdx] = stack[-1], pops pMember
             tblIdx++;

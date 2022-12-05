@@ -63,6 +63,10 @@ namespace LuaBindsAI {
     int AI_GetSpellOfRank(lua_State* L);
     int AI_GetSpellMaxRankForLevel(lua_State* L);
     int AI_GetSpellMaxRankForMe(lua_State* L);
+    int AI_GiveAllTalents(lua_State* L);
+    int AI_LearnSpell(lua_State* L);
+    int AI_HasSpell(lua_State* L);
+    int AI_ResetTalents(lua_State* L);
 
     // equip
     int AI_EquipRandomGear(lua_State* L);
@@ -142,6 +146,10 @@ namespace LuaBindsAI {
         {"GetSpellOfRank", AI_GetSpellOfRank},
         {"GetSpellMaxRankForLevel", AI_GetSpellMaxRankForLevel},
         {"GetSpellMaxRankForMe", AI_GetSpellMaxRankForMe},
+        {"GiveAllTalents", AI_GiveAllTalents},
+        {"LearnSpell", AI_LearnSpell},
+        {"HasSpell", AI_HasSpell},
+        {"ResetTalents", AI_ResetTalents},
 
         // equip
         {"EquipRandomGear", AI_EquipRandomGear},
