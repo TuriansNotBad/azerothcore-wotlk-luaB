@@ -43,6 +43,8 @@ public:
     void LogoutAllBots();
     void OnBotLogin(Player* bot);
 
+    void GroupAll(Player* master);
+
     Player* GetLuaBot(ObjectGuid guid);
 
     // Lua basics *******************************************

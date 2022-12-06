@@ -20,6 +20,7 @@
 #include "Player.h"
 #include "ScriptMgr.h"
 #include "LuaBotManager.h"
+#include <fstream>
 
 using namespace Acore::ChatCommands;
 
@@ -33,6 +34,7 @@ public:
         static ChatCommandTable luabCmdTbl =
         {
             { "add",       HandleAddLuabCommand,      SEC_GAMEMASTER, Console::No },
+            { "groupall",  HandleGroupallLuabCommand, SEC_GAMEMASTER, Console::No },
             { "remove",    HandleRemoveLuabCommand,   SEC_GAMEMASTER, Console::No },
             { "removeall", HandleRemoveAllLuabCommand,SEC_GAMEMASTER, Console::No },
             { "reset",     HandleResetLuabCommand,    SEC_GAMEMASTER, Console::No },
@@ -77,7 +79,14 @@ public:
         return true;
     }
 
-    static bool HandleRemoveLuabCommand(ChatHandler* handler, Optional<bool> enableArg)
+    static bool HandleGroupallLuabCommand(ChatHandler* handler)
+    {
+        Player* chr = handler->GetSession()->GetPlayer();
+        sLuaBotMgr.GroupAll(chr);
+        return true;
+    }
+
+    static bool HandleRemoveLuabCommand(ChatHandler* handler)
     {
         Player* bot = handler->getSelectedPlayer();
         if (!bot) {
@@ -89,13 +98,13 @@ public:
         return true;
     }
 
-    static bool HandleRemoveAllLuabCommand(ChatHandler* handler, Optional<bool> enableArg)
+    static bool HandleRemoveAllLuabCommand(ChatHandler* handler)
     {
         sLuaBotMgr.LogoutAllBots();
         return true;
     }
 
-    static bool HandleResetLuabCommand(ChatHandler* handler, Optional<bool> enableArg)
+    static bool HandleResetLuabCommand(ChatHandler* handler)
     {
         sLuaBotMgr.LuaReload();
         return true;

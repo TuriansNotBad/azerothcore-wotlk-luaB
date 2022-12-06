@@ -198,7 +198,7 @@ void LuaBotAI::Update(uint32 diff) {
     // leave my group if master is not in it
     if (!me->InBattleground())
         if (Group* g = me->GetGroup())
-            if (!g->IsMember(master->GetGUID()))
+            if (!g->IsMember(master->GetGUID()) || g->GetMembersCount() < 2)
                 g->Disband();
 
     // join group if invite
@@ -206,10 +206,11 @@ void LuaBotAI::Update(uint32 diff) {
         Group* group = me->GetGroupInvite();
         if (group->GetMembersCount() == 0)
             group->AddMember(group->GetLeader());
+        group->RemoveInvite(me);
         group->AddMember(me);
         // group->SetLootMethod( LootMethod::GROUP_LOOT );
     }
-
+    
     // maybe?
     if (me->GetTarget() == me->GetGUID())
         me->SetTarget();
@@ -1445,6 +1446,8 @@ void LuaBotAI::EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlo
     item->SetEnchantment(slot, enchantID, duration, charges);
 
 }
+
+// GROUP
 
 // TESTING
 

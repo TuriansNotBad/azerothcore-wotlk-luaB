@@ -24,6 +24,12 @@ namespace LuaBindsAI {
     int AI_IsInitialized(lua_State* L);
     int AI_IsReady(lua_State* L);
 
+    // bot mgmt
+
+    int AI_AddBot(lua_State* L);
+    int AI_IsBotConnected(lua_State* L);
+    int AI_CanMasterOwnBot(lua_State* L);
+
     // combat related
 
     int AI_AddAmmo(lua_State* L);
@@ -108,6 +114,11 @@ namespace LuaBindsAI {
         {"DrinkAndEat", AI_DrinkAndEat},
         {"IsInitialized", AI_IsInitialized},
         {"IsReady", AI_IsReady},
+        // bot mgmt
+        {"AddBot", AI_AddBot},
+        {"IsBotConnected", AI_IsBotConnected},
+        {"CanMasterOwnBot", AI_CanMasterOwnBot},
+
         // combat related
         {"AddAmmo", AI_AddAmmo},
         {"AttackAutoshot", AI_AttackAutoshot},

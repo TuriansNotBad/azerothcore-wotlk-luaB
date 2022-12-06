@@ -1,4 +1,5 @@
 
+#include "LuaBotManager.h"
 #include "LuaUtils.h"
 #include "LuaLibAI.h"
 #include "LuaBotAI.h"
@@ -122,6 +123,67 @@ int LuaBindsAI::AI_IsInitialized(lua_State* L) {
     return 1;
 }
 
+// -----------------------------------------------------------
+//                      Bot Mgmt
+// -----------------------------------------------------------
+
+int LuaBindsAI::AI_AddBot(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+
+    if (!ai->master)
+        return 0;
+
+    std::string char_name = luaL_checkstring(L, 2);
+    int logicID = luaL_checkinteger(L, 3);
+
+    uint32 accountID = sCharacterCache->GetCharacterAccountIdByGuid(ai->master->GetGUID());
+    if (!accountID)
+        return 0;
+
+    sLuaBotMgr.AddBot(char_name, accountID, logicID);
+    return 0;
+}
+
+
+int LuaBindsAI::AI_IsBotConnected(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    std::string name = luaL_checkstring(L, 2);
+    Player* p = ObjectAccessor::FindPlayerByName(name, false);
+    
+    if (p)
+        lua_pushboolean(L, true);
+    else
+        lua_pushboolean(L, false);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_CanMasterOwnBot(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+
+    if (!ai->master) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    std::string name = luaL_checkstring(L, 2);
+    Player* p = ObjectAccessor::FindPlayerByName(name, true);
+    if (p) {
+
+        if (p->IsLuaBot()) {
+            if (LuaBotAI* botAI = p->GetLuaAI()) {
+                lua_pushboolean(L, ai->master->GetGUID() == botAI->master->GetGUID());
+                return 1;
+            }
+        }
+        // not a bot or failed to get AI
+        lua_pushboolean(L, false);
+        return 1;
+
+    }
+    lua_pushboolean(L, true);
+    return 1;
+}
 
 // -----------------------------------------------------------
 //                      Combat RELATED

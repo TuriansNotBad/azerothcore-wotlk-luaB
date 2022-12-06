@@ -2,6 +2,7 @@
 
 #include "lua.hpp"
 #include "LuaBotManager.h"
+#include "GroupMgr.h"
 #include "Player.h"
 #include "GameTime.h"
 #include "Common.h"
@@ -202,6 +203,49 @@ void LuaBotManager::LogoutAllBots() {
         else
             itr = m_bots.erase(itr); // delete invalid bot entry
 
+}
+
+
+void LuaBotManager::GroupAll(Player* owner) {
+    for (auto bot : m_bots) {
+
+        if (!bot.second || !bot.second->IsInWorld() || bot.second->isBeingLoaded() || bot.second->IsBeingTeleported()) continue;
+
+        if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
+
+            if (botAI->master && owner->GetGUID() == botAI->master->GetGUID()) {
+
+                // if group exists invite
+                if (Group * g = botAI->master->GetGroup()) {
+                    if (g->GetMembersCount() > 4 && !g->isRaidGroup())
+                        g->ConvertToRaid();
+                    g->AddMember(bot.second);
+                    g->BroadcastGroupUpdate();
+                }
+                else {
+                    
+                    // new group, delete on any error
+                    Group * group = new Group;
+                    if (owner->IsSpectator() || !group->Create(owner)) {
+                        delete group;
+                        return;
+                    }
+
+                    //if (!group->AddMember(owner)) {
+                    //    delete group;
+                    //    return;
+                    //}
+                    if (!group->AddMember(bot.second)) {
+                        delete group;
+                        return;
+                    }
+                    sGroupMgr->AddGroup(group);
+                    group->BroadcastGroupUpdate();
+
+                }
+            }
+        }
+    }
 }
 
 

@@ -240,6 +240,10 @@ public:
     void EquipDestroyAll();
     void EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges);
 
+    //
+
+    void AddBot();
+
     // Testing
 
     void Print();
