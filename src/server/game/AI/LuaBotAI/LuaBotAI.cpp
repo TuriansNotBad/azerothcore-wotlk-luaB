@@ -1068,12 +1068,12 @@ void LuaBotAI::SummonPetIfNeeded(uint32 petId)
 
 Unit* LuaBotAI::SelectTarget(SelectTargetMethod targetType, uint32 position, float dist, bool playerOnly, int32 aura)
 {
-    return SelectTarget(targetType, position, DefaultTargetSelector(me, dist, playerOnly, aura));
+    return SelectTarget(targetType, position, DefaultTargetSelector(me, dist, playerOnly, true, aura));
 }
 
 void LuaBotAI::SelectTargetList(std::list<Unit*>& targetList, uint32 num, SelectTargetMethod targetType, float dist, bool playerOnly, int32 aura)
 {
-    SelectTargetList(targetList, DefaultTargetSelector(me, dist, playerOnly, aura), num, targetType);
+    SelectTargetList(targetList, DefaultTargetSelector(me, dist, playerOnly, true, aura), num, targetType);
 }
 
 template <class PREDICATE>
