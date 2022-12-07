@@ -46,6 +46,7 @@ LuaBotAI::LuaBotAI(Player* me, Player* master, int logicID) :
     userDataPlayerRef(LUA_NOREF),
     userTblRef(LUA_NOREF),
 
+    spec(""),
     roleID(0),
     logicID(logicID),
     logicManager(logicID),
@@ -85,6 +86,7 @@ void LuaBotAI::Init() {
     if (me->getLevel() != master->getLevel()) {
         me->GiveLevel(master->getLevel());
     }
+    me->UpdateSkillsToMaxSkillsForLevel();
 
     logicManager.Init(L, this);
     m_initialized = true;

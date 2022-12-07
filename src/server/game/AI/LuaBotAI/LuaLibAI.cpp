@@ -135,12 +135,13 @@ int LuaBindsAI::AI_AddBot(lua_State* L) {
 
     std::string char_name = luaL_checkstring(L, 2);
     int logicID = luaL_checkinteger(L, 3);
+    std::string spec = luaL_checkstring(L, 4);
 
     uint32 accountID = sCharacterCache->GetCharacterAccountIdByGuid(ai->master->GetGUID());
     if (!accountID)
         return 0;
 
-    sLuaBotMgr.AddBot(char_name, accountID, logicID);
+    sLuaBotMgr.AddBot(char_name, accountID, logicID, spec);
     return 0;
 }
 
@@ -396,9 +397,24 @@ int LuaBindsAI::AI_GetMarkedTarget(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_GetSpec(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushstring(L, ai->spec.c_str());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_SetSpec(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    std::string spec = luaL_checkstring(L, 2);
+    ai->spec = spec;
+    return 0;
+}
+
+
 int LuaBindsAI::AI_GetRole(lua_State* L) {
-    LuaBotAI** ai = AI_GetAIObject(L);
-    lua_pushinteger(L, (*ai)->GetRole());
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushinteger(L, ai->GetRole());
     return 1;
 }
 

@@ -307,6 +307,14 @@ int LuaBindsAI::Unit_GetDistanceToPos(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetExactDist(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    WorldObject* to = *WObj_GetWObjObject(L, 2);
+    lua_pushnumber(L, unit->GetExactDist(to));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetGroundHeight(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     float x = luaL_checknumber(L, 2);
@@ -586,7 +594,12 @@ int LuaBindsAI::Unit_GetMeleeReach(lua_State* L) {
     return 1;
 }
 
-
+int LuaBindsAI::Unit_GetMeleeRange(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* target = *Unit_GetUnitObject(L, 2);
+    lua_pushnumber(L, unit->GetMeleeRange(target));
+    return 1;
+}
 
 
 int LuaBindsAI::Unit_GetPower(lua_State* L) {

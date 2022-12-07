@@ -49,6 +49,7 @@ namespace LuaBindsAI {
     // position related
     int Unit_GetDistance(lua_State* L);
     int Unit_GetDistanceToPos(lua_State* L);
+    int Unit_GetExactDist(lua_State* L);
     int Unit_GetGroundHeight(lua_State* L);
     int Unit_GetMapId(lua_State* L);
     int Unit_GetNearPointAroundPosition(lua_State* L);
@@ -83,6 +84,7 @@ namespace LuaBindsAI {
     int Unit_GetMaxHealth(lua_State* L);
     int Unit_GetMaxPower(lua_State* L);
     int Unit_GetMeleeReach(lua_State* L);
+    int Unit_GetMeleeRange(lua_State* L);
     int Unit_GetPower(lua_State* L);
     int Unit_GetPowerPercent(lua_State* L);
     int Unit_GetSpellCost(lua_State* L);
@@ -117,7 +119,7 @@ namespace LuaBindsAI {
 
 
 	static const struct luaL_Reg Unit_BindLib[]{
-		{"Print", Unit_Print},
+		//{"Print", Unit_Print},
 
         //gen info
         {"ClearUnitState", Unit_ClearUnitState},
@@ -153,6 +155,7 @@ namespace LuaBindsAI {
         // position related
         {"GetDistance", Unit_GetDistance},
         {"GetDistanceToPos", Unit_GetDistanceToPos},
+        {"GetExactDist", Unit_GetExactDist},
         {"GetGroundHeight", Unit_GetGroundHeight},
         {"GetMapId", Unit_GetMapId},
         {"GetNearPointAroundPosition", Unit_GetNearPointAroundPosition},
@@ -190,6 +193,7 @@ namespace LuaBindsAI {
         {"GetMaxPower", Unit_GetMaxPower},
 
         {"GetMeleeReach", Unit_GetMeleeReach},
+        {"GetMeleeRange", Unit_GetMeleeRange},
         {"GetPower", Unit_GetPower},
         {"GetPowerPercent", Unit_GetPowerPercent},
         {"GetShapeshiftForm", Unit_GetShapeshiftForm},

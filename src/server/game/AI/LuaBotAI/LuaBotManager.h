@@ -37,7 +37,7 @@ public:
 
     // Getting bots into the game ***************************
 
-    void AddBot(const std::string& char_name, uint32 masterAccountId, int logicID);
+    void AddBot(const std::string& char_name, uint32 masterAccountId, int logicID, std::string spec = "");
     void HandlePlayerBotLoginCallback(LuaBotLoginQueryHolder const& holder);
     void LogoutPlayerBot(ObjectGuid guid);
     void LogoutAllBots();

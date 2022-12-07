@@ -71,6 +71,7 @@ public:
 
     static const char* MTNAME;
 
+    std::string spec;
     int logicID;
     int roleID;
     Player* me; // changing this is a bad idea
@@ -241,8 +242,6 @@ public:
     void EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges);
 
     //
-
-    void AddBot();
 
     // Testing
 

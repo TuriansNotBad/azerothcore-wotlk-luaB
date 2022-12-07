@@ -47,7 +47,7 @@ public:
         return commandTable;
     }
 
-    static bool HandleAddLuabCommand(ChatHandler* handler, int logicID, std::string name)
+    static bool HandleAddLuabCommand(ChatHandler* handler, int logicID, std::string name, Optional<std::string> spec)
     {
         // player not found
         Player* chr = handler->GetSession()->GetPlayer();
@@ -75,7 +75,7 @@ public:
             handler->SetSentErrorMessage(true);
             return false;
         }
-        sLuaBotMgr.AddBot(name, accountId, logicID);
+        sLuaBotMgr.AddBot(name, accountId, logicID, spec.value_or(""));
         return true;
     }
 

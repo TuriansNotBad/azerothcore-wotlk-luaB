@@ -51,6 +51,8 @@ namespace LuaBindsAI {
     int AI_GetAttackersInRangeCount(lua_State* L);
     int AI_GetClass(lua_State* L);
     int AI_GetMarkedTarget(lua_State* L);
+    int AI_GetSpec(lua_State* L);
+    int AI_SetSpec(lua_State* L);
     int AI_GetRole(lua_State* L);
     int AI_SetRole(lua_State* L);
     int AI_GetGameTime(lua_State* L);
@@ -139,6 +141,8 @@ namespace LuaBindsAI {
         {"GetAttackersInRangeCount", AI_GetAttackersInRangeCount},
         {"GetClass", AI_GetClass},
         {"GetMarkedTarget", AI_GetMarkedTarget},
+        {"GetSpec", AI_GetSpec},
+        {"SetSpec", AI_SetSpec},
         {"GetRole", AI_GetRole},
         {"SetRole", AI_SetRole},
         {"GetGameTime", AI_GetGameTime},

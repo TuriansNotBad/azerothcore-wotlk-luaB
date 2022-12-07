@@ -19,10 +19,11 @@ class LuaBotLoginQueryHolder : public LoginQueryHolder
 {
 private:
 public:
-    LuaBotLoginQueryHolder(uint32 accountId, ObjectGuid guid, Player* master, int logicID)
-        : LoginQueryHolder(accountId, guid), master(master), logicID(logicID) { }
+    LuaBotLoginQueryHolder(uint32 accountId, ObjectGuid guid, Player* master, int logicID, std::string spec)
+        : LoginQueryHolder(accountId, guid), master(master), logicID(logicID), spec(spec) { }
     Player* master;
     int logicID;
+    std::string spec;
 };
 
 
@@ -93,7 +94,7 @@ Player* LuaBotManager::GetLuaBot(ObjectGuid guid) {
 }
 
 
-void LuaBotManager::AddBot(const std::string& char_name, uint32 masterAccountId, int logicID) {
+void LuaBotManager::AddBot(const std::string& char_name, uint32 masterAccountId, int logicID, std::string spec) {
 
     // find bot guid
     ObjectGuid botGuid = sCharacterCache->GetCharacterGuidByName(char_name);
@@ -114,7 +115,7 @@ void LuaBotManager::AddBot(const std::string& char_name, uint32 masterAccountId,
         if (!masterSession->GetPlayer())
             return;
 
-        std::shared_ptr<LuaBotLoginQueryHolder> holder = std::make_shared<LuaBotLoginQueryHolder>(accountId, botGuid, masterSession->GetPlayer(), logicID);
+        std::shared_ptr<LuaBotLoginQueryHolder> holder = std::make_shared<LuaBotLoginQueryHolder>(accountId, botGuid, masterSession->GetPlayer(), logicID, spec);
         if (!holder->Initialize()) {
             return;
         }
@@ -145,7 +146,14 @@ void LuaBotManager::HandlePlayerBotLoginCallback(LuaBotLoginQueryHolder const& h
 
     bot->CreateLuaAI(bot, holder.master, holder.logicID);
 
+    LuaBotAI* botAI = bot->GetLuaAI();
+    if (!botAI) return;
+
+    botAI->spec = holder.spec;
+
     OnBotLogin(bot);
+
+
 }
 
 
