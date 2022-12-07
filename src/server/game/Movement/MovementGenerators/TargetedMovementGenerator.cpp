@@ -45,9 +45,6 @@ bool ChaseMovementGenerator<T>::PositionOkay(T* owner, Unit* target, Optional<fl
     if (Player* p = owner->ToPlayer()) {
         if (p->IsLuaBot()) {
             float const hitboxSum = owner->GetCombatReach() + target->GetCombatReach();
-            if (owner->GetName() == "Pawmaster") {
-                // printf("Pawmaster range = %f distsq = %f\n", _range->MinTolerance + hitboxSum, distSq);
-            }
             if (_range && distSq < G3D::square((hitboxSum + _range->MinTolerance))) {
                 return false;
             }
