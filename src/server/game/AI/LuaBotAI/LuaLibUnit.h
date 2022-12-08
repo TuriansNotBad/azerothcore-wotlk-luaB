@@ -47,14 +47,19 @@ namespace LuaBindsAI {
     int Unit_UpdateSpeed(lua_State* L);
 
     // position related
+    int Unit_GetAbsoluteAngle(lua_State* L);
+    int Unit_GetAngle(lua_State* L);
+    int Unit_GetCollisionRadius(lua_State* L);
     int Unit_GetDistance(lua_State* L);
     int Unit_GetDistanceToPos(lua_State* L);
     int Unit_GetExactDist(lua_State* L);
     int Unit_GetGroundHeight(lua_State* L);
     int Unit_GetMapId(lua_State* L);
+    int Unit_GetNearPoint(lua_State* L);
     int Unit_GetNearPointAroundPosition(lua_State* L);
     int Unit_GetForwardVector(lua_State* L);
     int Unit_GetPosition(lua_State* L);
+    int Unit_GetRelativeAngle(lua_State* L);
     int Unit_GetOrientation(lua_State* L);
     int Unit_SetOrientation(lua_State* L);
     int Unit_GetZoneId(lua_State* L);
@@ -62,7 +67,8 @@ namespace LuaBindsAI {
     int Unit_IsWithinLOSInMap(lua_State* L);
     int Unit_SetFacingTo(lua_State* L);
     int Unit_SetFacingToObject(lua_State* L);
-    
+    int Unit_ToAbsoluteAngle(lua_State* L);
+
     // death related
     int Unit_GetDeathState(lua_State* L);
     int Unit_IsAlive(lua_State* L);
@@ -77,6 +83,7 @@ namespace LuaBindsAI {
     int Unit_GetAttackTimer(lua_State* L);
     int Unit_GetAuraStacks(lua_State* L);
     int Unit_GetCombatDistance(lua_State* L);
+    int Unit_GetCombatReach(lua_State* L);
     int Unit_GetCurrentSpellId(lua_State* L);
     int Unit_GetEnemyCountInRadiusAround(lua_State* L);
     int Unit_GetHealth(lua_State* L);
@@ -153,21 +160,27 @@ namespace LuaBindsAI {
         {"UpdateSpeed", Unit_UpdateSpeed},
 
         // position related
+        {"GetAbsoluteAngle", Unit_GetAbsoluteAngle},
+        {"GetAngle", Unit_GetAngle},
+        {"GetCollisionRadius", Unit_GetCollisionRadius},
         {"GetDistance", Unit_GetDistance},
         {"GetDistanceToPos", Unit_GetDistanceToPos},
         {"GetExactDist", Unit_GetExactDist},
+        {"GetForwardVector", Unit_GetForwardVector},
         {"GetGroundHeight", Unit_GetGroundHeight},
         {"GetMapId", Unit_GetMapId},
+        {"GetNearPoint", Unit_GetNearPoint},
         {"GetNearPointAroundPosition", Unit_GetNearPointAroundPosition},
-        {"GetForwardVector", Unit_GetForwardVector},
         {"GetOrientation", Unit_GetOrientation},
-        {"SetOrientation", Unit_SetOrientation},
         {"GetPosition", Unit_GetPosition},
-        {"GetZoneId", Unit_GetZoneId},
+        {"GetRelativeAngle", Unit_GetRelativeAngle},
         {"IsInWorld", Unit_IsInWorld},
         {"IsWithinLOSInMap", Unit_IsWithinLOSInMap},
         {"SetFacingTo", Unit_SetFacingTo},
         {"SetFacingToObject", Unit_SetFacingToObject},
+        {"SetOrientation", Unit_SetOrientation},
+        {"ToAbsoluteAngle", Unit_ToAbsoluteAngle},
+        {"GetZoneId", Unit_GetZoneId},
 
         // death related
         {"GetDeathState", Unit_GetDeathState},
@@ -183,6 +196,7 @@ namespace LuaBindsAI {
         {"GetAttackRange", Unit_GetAttackRange},
         {"GetAttackTimer", Unit_GetAttackTimer},
         {"GetAuraStacks", Unit_GetAuraStacks},
+        {"GetCombatReach", Unit_GetCombatReach},
         {"GetCombatDistance", Unit_GetCombatDistance},
         {"GetCurrentSpellId", Unit_GetCurrentSpellId},
         {"GetEnemyCountInRadiusAround", Unit_GetEnemyCountInRadiusAround},

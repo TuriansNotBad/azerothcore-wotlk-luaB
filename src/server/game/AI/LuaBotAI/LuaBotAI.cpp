@@ -1360,6 +1360,20 @@ void LuaBotAI::EquipDestroyAll() {
     for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
         me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
 
+    for (uint8 i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; i++)
+        if (Item* pItem = me->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+    for (uint8 i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+        if (Item* pItem = me->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+            me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+    for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        if (Bag* pBag = me->GetBagByPos(i))
+            for (uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                if (Item* pItem = pBag->GetItemByPos(j))
+                    me->DestroyItem(i, j, true);
+
 }
 
 

@@ -288,6 +288,30 @@ int LuaBindsAI::Unit_UpdateSpeed(lua_State* L) {
 // 3. Position
 // ===================================================
 
+
+int LuaBindsAI::Unit_GetAngle(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* to = *Unit_GetUnitObject(L, 2);
+    lua_pushnumber(L, unit->GetAngle(to));
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetAbsoluteAngle(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* to = *Unit_GetUnitObject(L, 2);
+    lua_pushnumber(L, unit->GetAbsoluteAngle(to));
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetCollisionRadius(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushnumber(L, unit->GetCollisionRadius());
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetDistance(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     WorldObject* to = *WObj_GetWObjObject(L, 2);
@@ -315,6 +339,18 @@ int LuaBindsAI::Unit_GetExactDist(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetForwardVector(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float ori = unit->GetOrientation();
+    lua_newtable(L);
+    lua_pushnumber(L, std::cos(ori));
+    lua_setfield(L, -2, "x");
+    lua_pushnumber(L, std::sin(ori));
+    lua_setfield(L, -2, "y");
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetGroundHeight(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     float x = luaL_checknumber(L, 2);
@@ -331,6 +367,27 @@ int LuaBindsAI::Unit_GetMapId(lua_State* L) {
     lua_pushinteger(L, unit->GetMapId());
     return 1;
 }
+
+
+int LuaBindsAI::Unit_GetNearPoint(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* searcher = *Unit_GetUnitObject(L, 2);
+    float bounding_radius = luaL_checknumber(L, 3);
+    float distance2d = luaL_checknumber(L, 4);
+    float absAngle = luaL_checknumber(L, 5);
+
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = 0.0f;
+    unit->GetNearPoint(searcher, x, y, z, bounding_radius, distance2d, absAngle, 0.0f);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    lua_pushnumber(L, z);
+
+    return 3;
+
+}
+
 
 
 int LuaBindsAI::Unit_GetNearPointAroundPosition(lua_State* L) {
@@ -357,31 +414,12 @@ int LuaBindsAI::Unit_GetNearPointAroundPosition(lua_State* L) {
 }
 
 
-int LuaBindsAI::Unit_GetForwardVector(lua_State* L) {
-    Unit* unit = *Unit_GetUnitObject(L);
-    float ori = unit->GetOrientation();
-    lua_newtable(L);
-    lua_pushnumber(L, std::cos(ori));
-    lua_setfield(L, -2, "x");
-    lua_pushnumber(L, std::sin(ori));
-    lua_setfield(L, -2, "y");
-    return 1;
-}
-
-
 int LuaBindsAI::Unit_GetOrientation(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushnumber(L, unit->GetOrientation());
     return 1;
 }
 
-
-int LuaBindsAI::Unit_SetOrientation(lua_State* L) {
-    Unit* unit = *Unit_GetUnitObject(L);
-    float ori = luaL_checknumber(L, 2);
-    unit->SetOrientation(ori);
-    return 0;
-}
 
 
 int LuaBindsAI::Unit_GetPosition(lua_State* L) {
@@ -397,11 +435,13 @@ int LuaBindsAI::Unit_GetPosition(lua_State* L) {
 }
 
 
-int LuaBindsAI::Unit_GetZoneId(lua_State* L) {
+int LuaBindsAI::Unit_GetRelativeAngle(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
-    lua_pushinteger(L, unit->GetZoneId());
+    Unit* to = *Unit_GetUnitObject(L, 2);
+    lua_pushnumber(L, unit->GetRelativeAngle(to));
     return 1;
 }
+
 
 
 int LuaBindsAI::Unit_IsInWorld(lua_State* L) {
@@ -433,6 +473,31 @@ int LuaBindsAI::Unit_SetFacingToObject(lua_State* L) {
     unit->SetFacingToObject(pObject);
     return 0;
 }
+
+
+int LuaBindsAI::Unit_SetOrientation(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float ori = luaL_checknumber(L, 2);
+    unit->SetOrientation(ori);
+    return 0;
+}
+
+
+int LuaBindsAI::Unit_ToAbsoluteAngle(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float angle = luaL_checknumber(L, 2);
+    lua_pushnumber(L, unit->ToAbsoluteAngle(angle));
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetZoneId(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushinteger(L, unit->GetZoneId());
+    return 1;
+}
+
+
 
 
 // ===================================================
@@ -553,9 +618,17 @@ int LuaBindsAI::Unit_GetCombatDistance(lua_State* L) {
     float sizefactor = unit->GetCombatReach() + to->GetCombatReach();
     float maxdist = distsq + sizefactor;
 
-    lua_pushinteger(L, maxdist);
+    lua_pushnumber(L, maxdist);
     return 1;
 }
+
+
+int LuaBindsAI::Unit_GetCombatReach(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushnumber(L, unit->GetCombatReach());
+    return 1;
+}
+
 
 
 int LuaBindsAI::Unit_GetEnemyCountInRadiusAround(lua_State* L) {
