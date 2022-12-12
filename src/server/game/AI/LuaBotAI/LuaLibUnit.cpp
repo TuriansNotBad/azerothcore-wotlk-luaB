@@ -78,6 +78,18 @@ int LuaBindsAI::Unit_ClearUnitState(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetAI(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    // bots only
+    if (Player* p = unit->ToPlayer())
+        if (LuaBotAI* botAI = p->GetLuaAI()) {
+            botAI->PushUD(L);
+            return 1;
+        }
+    return 0;
+}
+
+
 int LuaBindsAI::Unit_GetClass(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushinteger(L, unit->getClass());
@@ -334,7 +346,7 @@ int LuaBindsAI::Unit_GetDistanceToPos(lua_State* L) {
 int LuaBindsAI::Unit_GetExactDist(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     WorldObject* to = *WObj_GetWObjObject(L, 2);
-    lua_pushnumber(L, unit->GetExactDist(to));
+    lua_pushnumber(L, unit->GetExactDist2d(to));
     return 1;
 }
 
@@ -799,6 +811,15 @@ int LuaBindsAI::Unit_HasAura(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_HasAuraIDBy(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* by = *Unit_GetUnitObject(L, 2);
+    int spellId = luaL_checkinteger(L, 3);
+    lua_pushboolean(L, unit->HasAura(spellId, by->GetGUID()));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_HasAuraType(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     int auraId = luaL_checkinteger(L, 2);
@@ -848,7 +869,7 @@ int LuaBindsAI::Unit_InterruptSpell(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     int spellType = luaL_checkinteger(L, 2);
     bool withDelayed = luaL_checkboolean(L, 3);
-    if (spellType < CURRENT_MELEE_SPELL || spellType > CURRENT_CHANNELED_SPELL)
+    if (spellType < CURRENT_MELEE_SPELL || spellType > CURRENT_AUTOREPEAT_SPELL)
         luaL_error(L, "Unit.InterruptSpell. Invalid spell type id, expected value in range [0, 3], got %d", spellType);
     unit->InterruptSpell((CurrentSpellTypes) spellType, withDelayed);
     return 0;

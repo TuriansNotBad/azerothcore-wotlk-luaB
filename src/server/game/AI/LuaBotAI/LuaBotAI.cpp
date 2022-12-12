@@ -364,8 +364,8 @@ bool LuaBotAI::DrinkAndEat()
     if (me->GetVictim())
         return false;
 
-    bool const needToEat = me->GetHealthPct() < 50.0f;
-    bool const needToDrink = (me->getPowerType() == POWER_MANA) && (me->GetPowerPct(POWER_MANA) < 50.0f);
+    bool const needToEat = me->GetHealthPct() < 100.0f;
+    bool const needToDrink = (me->getPowerType() == POWER_MANA) && (me->GetPowerPct(POWER_MANA) < 100.0f);
 
     if (!needToEat && !needToDrink)
         return false;
@@ -711,7 +711,7 @@ bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bo
         float maxR = pSpellEntry->GetMaxRange(pSpellEntry->IsPositive(), me);
         float minR = pSpellEntry->GetMinRange(pSpellEntry->IsPositive());
 
-        if (!me->IsWithinCombatRange(pTarget, maxR) || me->IsWithinCombatRange(pTarget, minR))
+        if ((maxR && !me->IsWithinCombatRange(pTarget, maxR)) || (minR && me->IsWithinCombatRange(pTarget, minR)))
             return false;
     }
 
@@ -743,7 +743,7 @@ SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntr
 
     // give reagent and retry
     if ((result == SPELL_FAILED_NEED_AMMO_POUCH ||
-        result == SPELL_FAILED_ITEM_NOT_READY) &&
+        result == SPELL_FAILED_ITEM_NOT_READY || result == SPELL_FAILED_REAGENTS) &&
         pSpellEntry->Reagent[0])
     {
         if (Item* pItem = me->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START))

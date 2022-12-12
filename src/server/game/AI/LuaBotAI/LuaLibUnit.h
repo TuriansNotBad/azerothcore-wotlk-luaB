@@ -17,6 +17,7 @@ namespace LuaBindsAI {
 
     // General
     int Unit_ClearUnitState(lua_State* L);
+    int Unit_GetAI(lua_State* L);
     int Unit_GetClass(lua_State* L);
     int Unit_GetLevel(lua_State* L);
     int Unit_GetName(lua_State* L);
@@ -101,6 +102,7 @@ namespace LuaBindsAI {
     int Unit_GetVictim(lua_State* L);
     int Unit_GetVictimsInRange(lua_State* L);
     int Unit_HasAura(lua_State* L);
+    int Unit_HasAuraIDBy(lua_State* L);
     int Unit_HasAuraBy(lua_State* L);
     int Unit_HasAuraType(lua_State* L);
     int Unit_HasObjInArc(lua_State* L);
@@ -130,6 +132,7 @@ namespace LuaBindsAI {
 
         //gen info
         {"ClearUnitState", Unit_ClearUnitState},
+        {"GetAI", Unit_GetAI},
         {"GetClass", Unit_GetClass},
         {"GetLevel", Unit_GetLevel},
         {"GetName", Unit_GetName},
@@ -219,6 +222,7 @@ namespace LuaBindsAI {
 
         {"HasAura", Unit_HasAura},
         {"HasAuraBy", Unit_HasAuraBy},
+        {"HasAuraIDBy", Unit_HasAuraIDBy},
         {"HasAuraType", Unit_HasAuraType},
         {"HasObjInArc", Unit_HasObjInArc},
         {"HasPosInArc", Unit_HasPosInArc},
