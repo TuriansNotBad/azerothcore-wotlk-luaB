@@ -44,6 +44,7 @@ public:
     void OnBotLogin(Player* bot);
 
     void GroupAll(Player* master);
+    void ReviveAll(Player* master, float health);
 
     Player* GetLuaBot(ObjectGuid guid);
 

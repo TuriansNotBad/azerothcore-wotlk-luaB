@@ -215,7 +215,7 @@ void LuaBotManager::LogoutAllBots() {
 
 
 void LuaBotManager::GroupAll(Player* owner) {
-    for (auto bot : m_bots) {
+    for (auto& bot : m_bots) {
 
         if (!bot.second || !bot.second->IsInWorld() || bot.second->isBeingLoaded() || bot.second->IsBeingTeleported()) continue;
 
@@ -227,8 +227,11 @@ void LuaBotManager::GroupAll(Player* owner) {
                 if (Group * g = botAI->master->GetGroup()) {
                     if (g->GetMembersCount() > 4 && !g->isRaidGroup())
                         g->ConvertToRaid();
-                    g->AddMember(bot.second);
-                    g->BroadcastGroupUpdate();
+                    // already in group?
+                    if (!g->IsMember(bot.second->GetGUID())) {
+                        g->AddMember(bot.second);
+                        g->BroadcastGroupUpdate();
+                    }
                 }
                 else {
                     
@@ -252,6 +255,19 @@ void LuaBotManager::GroupAll(Player* owner) {
 
                 }
             }
+        }
+    }
+}
+
+
+void LuaBotManager::ReviveAll(Player* owner, float health) {
+    for (auto& bot : m_bots) {
+        if (!bot.second || bot.second->IsAlive() || !bot.second->IsInWorld() || bot.second->isBeingLoaded() || bot.second->IsBeingTeleported()) continue;
+
+        LuaBotAI* botAI = bot.second->GetLuaAI();
+        // owned bots only
+        if (botAI && botAI->master && owner->GetGUID() == botAI->master->GetGUID()) {
+            bot.second->ResurrectPlayer(health, false);
         }
     }
 }

@@ -555,6 +555,18 @@ int LuaBindsAI::Unit_AddAura(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_AddThreat(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* target = *Unit_GetUnitObject(L, 2);
+    float threatN = luaL_checknumber(L, 3);
+    bool reset = luaL_checkboolean(L, 4);
+    if (reset)
+        unit->GetThreatMgr().ResetAllThreat();
+    unit->AddThreat(target, threatN);
+    return 0;
+}
+
+
 int LuaBindsAI::Unit_CastSpell(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     Unit* target = *Unit_GetUnitObject(L, 2);

@@ -77,6 +77,7 @@ namespace LuaBindsAI {
 
     // combat related
     int Unit_AddAura(lua_State* L);
+    int Unit_AddThreat(lua_State* L);
     int Unit_CastSpell(lua_State* L);
     int Unit_ClearTarget(lua_State* L);
     int Unit_GetAttackersTbl(lua_State* L);
@@ -189,9 +190,10 @@ namespace LuaBindsAI {
         {"GetDeathState", Unit_GetDeathState},
         {"IsAlive", Unit_IsAlive},
         {"IsDead", Unit_IsDead},
-
+        
         // combat related
         {"AddAura", Unit_AddAura},
+        {"AddThreat", Unit_AddThreat},
         {"CastSpell", Unit_CastSpell},
         {"ClearTarget", Unit_ClearTarget},
 

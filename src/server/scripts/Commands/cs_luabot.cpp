@@ -38,6 +38,8 @@ public:
             { "remove",    HandleRemoveLuabCommand,   SEC_GAMEMASTER, Console::No },
             { "removeall", HandleRemoveAllLuabCommand,SEC_GAMEMASTER, Console::No },
             { "reset",     HandleResetLuabCommand,    SEC_GAMEMASTER, Console::No },
+            { "reviveall", HandleReviveAllLuabCommand,SEC_GAMEMASTER, Console::No },
+            { "threat",    HandleThreatLuabCommand,   SEC_GAMEMASTER, Console::No },
         };
 
         static ChatCommandTable commandTable =
@@ -107,6 +109,38 @@ public:
     static bool HandleResetLuabCommand(ChatHandler* handler)
     {
         sLuaBotMgr.LuaReload();
+        return true;
+    }
+
+    static bool HandleReviveAllLuabCommand(ChatHandler* handler, float health)
+    {
+        Player* chr = handler->GetSession()->GetPlayer();
+        if (!chr) {
+            handler->SendSysMessage("Could not find master.");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        sLuaBotMgr.ReviveAll(chr, health);
+        return true;
+    }
+
+    static bool HandleThreatLuabCommand(ChatHandler* handler, float threatN)
+    {
+        Player* chr = handler->GetSession()->GetPlayer();
+        Creature* c = handler->getSelectedCreature();
+        if (!chr) {
+            handler->SendSysMessage("Could not find master.");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        if (!c) {
+            handler->SendSysMessage("Select a creature.");
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+        c->GetThreatMgr().ResetAllThreat();
+        c->AddThreat(chr, threatN);
+        c->Attack(chr, true);
         return true;
     }
 
