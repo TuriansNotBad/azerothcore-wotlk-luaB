@@ -735,10 +735,11 @@ SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntr
     // stop and retry
     if ((result == SPELL_FAILED_MOVING || result == SPELL_CAST_OK) &&
         (pSpellEntry->CalcCastTime(me) > 0) &&
-        (me->isMoving() || !me->IsStopped()))
+        me->isMoving())
     {
         me->StopMoving();
-        result = me->CastSpell(pTarget, pSpellEntry, false);
+        if (result != SPELL_CAST_OK)
+            result = me->CastSpell(pTarget, pSpellEntry, false);
     }
 
     // give reagent and retry

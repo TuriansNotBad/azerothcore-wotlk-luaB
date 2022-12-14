@@ -648,6 +648,103 @@ int LuaBindsAI::AI_LearnSpell(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_LearnTalent(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 talentID = luaL_checkinteger(L, 2);
+    if (!sTalentStore.LookupEntry(talentID))
+        luaL_error(L, "AI.LearnTalent: talent doesn't exist %d", talentID);
+    uint32 talentRank = luaL_checkinteger(L, 3);
+    if (talentRank >= MAX_TALENT_RANK)
+        luaL_error(L, "AI.LearnTalent: talent rank cannot exceed %d", MAX_TALENT_RANK - 1);
+    bool force = luaL_checkboolean(L, 4);
+    ai->me->LearnTalent(talentID, talentRank, force);
+    return 0;
+}
+
+
+int LuaBindsAI::AI_GetTalentTbl(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+
+    // from cs_learn.cpp
+    Player* player = ai->me;
+    uint32 classMask = player->getClassMask();
+
+    lua_newtable(L);
+    int tblIdx = 1;
+
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+    {
+        TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        if (!talentInfo)
+            continue;
+
+        TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+        if (!talentTabInfo)
+            continue;
+
+        if ((classMask & talentTabInfo->ClassMask) == 0)
+            continue;
+
+        // xinef: search highest talent rank
+        uint32 spellId = 0;
+        uint8 rankId = MAX_TALENT_RANK;
+        for (int8 rank = MAX_TALENT_RANK - 1; rank >= 0; --rank)
+        {
+            if (talentInfo->RankID[rank] != 0)
+            {
+                rankId = rank;
+                spellId = talentInfo->RankID[rank];
+                break;
+            }
+        }
+
+        // xinef: some errors?
+        if (!spellId || rankId == MAX_TALENT_RANK)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
+            continue;
+
+        lua_newtable(L);
+        lua_newtable(L);
+        for (lua_Integer rank = 0; rank <= rankId; ++rank)
+            if (talentInfo->RankID[rank] != 0) {
+                lua_pushinteger(L, talentInfo->RankID[rank]);
+                lua_seti(L, -2, rank + 1);
+            }
+        lua_setfield(L, -2, "RankID");
+        lua_pushinteger(L, spellId);
+        lua_setfield(L, -2, "spellID");
+        lua_pushinteger(L, rankId);
+        lua_setfield(L, -2, "maxRankID");
+        lua_pushinteger(L, talentInfo->TalentID);
+        lua_setfield(L, -2, "TalentID");
+        lua_pushinteger(L, talentInfo->Col);
+        lua_setfield(L, -2, "Col");
+        lua_pushinteger(L, talentInfo->Row);
+        lua_setfield(L, -2, "Row");
+        lua_pushinteger(L, talentInfo->addToSpellBook);
+        lua_setfield(L, -2, "addToSpellBook");
+        lua_pushinteger(L, talentInfo->TalentTab);
+        lua_setfield(L, -2, "TalentTab");
+        lua_pushinteger(L, talentInfo->DependsOn);
+        lua_setfield(L, -2, "DependsOn");
+        lua_pushinteger(L, talentInfo->DependsOnRank);
+        lua_setfield(L, -2, "DependsOnRank");
+        lua_pushstring(L, spellInfo->SpellName[0]);
+        lua_setfield(L, -2, "spellName");
+        lua_pushinteger(L, talentTabInfo->TalentTabID);
+        lua_setfield(L, -2, "tabID");
+        lua_seti(L, -2, tblIdx);
+        ++tblIdx;
+    }
+
+    return 1;
+}
+
+
+
 int LuaBindsAI::AI_ResetTalents(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     lua_pushboolean(L, ai->me->resetTalents(true));
@@ -667,17 +764,20 @@ int LuaBindsAI::AI_EquipItem(lua_State* L) {
     return 0;
 }
 
+
 int LuaBindsAI::AI_EquipRandomGear(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     ai->EquipRandomGear();
     return 0;
 }
 
+
 int LuaBindsAI::AI_EquipDestroyAll(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     ai->EquipDestroyAll();
     return 0;
 }
+
 
 int LuaBindsAI::AI_EquipEnchant(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
@@ -697,11 +797,65 @@ int LuaBindsAI::AI_EquipEnchant(lua_State* L) {
     return 0;
 }
 
+
 int LuaBindsAI::AI_EquipFindItemByName(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     std::string name(luaL_checkstring(L, 2));
     lua_pushinteger(L, ai->EquipFindItemByName(name));
     return 1;
+}
+
+
+int LuaBindsAI::AI_ClearGlyph(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 slot = luaL_checkinteger(L, 2);
+
+    if (slot >= MAX_GLYPH_SLOT_INDEX)
+        luaL_error(L, "AI.ClearGlyph: Glyph slot out of bounds. Available - [0, %d)", MAX_GLYPH_SLOT_INDEX);
+
+    WorldPacket packet;
+    packet.SetOpcode(CMSG_REMOVE_GLYPH);
+    packet << slot;
+    ai->me->GetSession()->HandleRemoveGlyph(packet);
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_GetGlyph(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 slot = luaL_checkinteger(L, 2);
+    if (slot >= MAX_GLYPH_SLOT_INDEX)
+        luaL_error(L, "AI.GetGlyph: Glyph slot out of bounds. Available - [0, %d)", MAX_GLYPH_SLOT_INDEX);
+    lua_pushinteger(L, ai->me->GetGlyph(slot));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_SetGlyph(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 slot = luaL_checkinteger(L, 2);
+    uint32 glyph = luaL_checkinteger(L, 3);
+    bool save = luaL_checkboolean(L, 4);
+
+    if (slot >= MAX_GLYPH_SLOT_INDEX)
+        luaL_error(L, "AI.SetGlyph: Glyph slot out of bounds. Available - [0, %d)", MAX_GLYPH_SLOT_INDEX);
+
+    if (!sGlyphPropertiesStore.LookupEntry(glyph))
+        luaL_error(L, "AI.SetGlyph: Glyph doesn't exist %d", glyph);
+
+    if (ai->me->GetGlyph(slot)) {
+        WorldPacket packet;
+        packet.SetOpcode(CMSG_REMOVE_GLYPH);
+        packet << slot;
+        ai->me->GetSession()->HandleRemoveGlyph(packet);
+    }
+
+    if (GlyphPropertiesEntry const* glyphEntry = sGlyphPropertiesStore.LookupEntry(glyph))
+        ai->me->CastSpell(ai->me, glyphEntry->SpellId, TriggerCastFlags(TRIGGERED_FULL_MASK & ~(TRIGGERED_IGNORE_SHAPESHIFT | TRIGGERED_IGNORE_CASTER_AURASTATE)));
+
+    ai->me->SetGlyph(slot, glyph, save);
+    return 0;
 }
 
 // -----------------------------------------------------------

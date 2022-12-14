@@ -62,6 +62,7 @@ namespace LuaBindsAI {
     int AI_SelectShieldTarget(lua_State* L);
 
     // spell management
+
     int AI_GetSpellChainFirst(lua_State* L);
     int AI_GetSpellChainLast(lua_State* L);
     int AI_GetSpellChainNext(lua_State* L);
@@ -73,15 +74,21 @@ namespace LuaBindsAI {
     int AI_GetSpellMaxRankForMe(lua_State* L);
     int AI_GiveAllTalents(lua_State* L);
     int AI_LearnSpell(lua_State* L);
+    int AI_LearnTalent(lua_State* L);
     int AI_HasSpell(lua_State* L);
+    int AI_GetTalentTbl(lua_State* L);
     int AI_ResetTalents(lua_State* L);
-
+    
     // equip
+
     int AI_EquipRandomGear(lua_State* L);
     int AI_EquipItem(lua_State* L);
     int AI_EquipDestroyAll(lua_State* L);
     int AI_EquipEnchant(lua_State* L);
     int AI_EquipFindItemByName(lua_State* L);
+    int AI_ClearGlyph(lua_State* L);
+    int AI_GetGlyph(lua_State* L);
+    int AI_SetGlyph(lua_State* L);
 
     // pet related
 
@@ -163,7 +170,9 @@ namespace LuaBindsAI {
         {"GetSpellMaxRankForMe", AI_GetSpellMaxRankForMe},
         {"GiveAllTalents", AI_GiveAllTalents},
         {"LearnSpell", AI_LearnSpell},
+        {"LearnTalent", AI_LearnTalent},
         {"HasSpell", AI_HasSpell},
+        {"GetTalentTbl", AI_GetTalentTbl},
         {"ResetTalents", AI_ResetTalents},
 
         // equip
@@ -172,6 +181,9 @@ namespace LuaBindsAI {
         {"EquipDestroyAll", AI_EquipDestroyAll},
         {"EquipEnchant", AI_EquipEnchant},
         {"EquipFindItemByName", AI_EquipFindItemByName},
+        {"ClearGlyph", AI_ClearGlyph},
+        {"GetGlyph", AI_GetGlyph},
+        {"SetGlyph", AI_SetGlyph},
 
         // pet related
         {"SummonPetIfNeeded", AI_SummonPetIfNeeded},
