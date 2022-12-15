@@ -876,26 +876,57 @@ int LuaBindsAI::AI_GetPet(lua_State* L) {
 }
 
 /// <summary>
-/// If unit has pet sends attack command to pet ai
+/// If AI has pet sends attack command to pet ai.
 /// </summary>
-/// <param name="unit userdata">- Unit</param>
+/// <param name="AI userdata">- AI.</param>
 /// <param name="unit userdata">- Target to attack</param>
 int LuaBindsAI::AI_PetAttack(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     Unit* pVictim = *Unit_GetUnitObject(L, 2);
     if (Pet* pPet = ai->me->GetPet())
         if (!pPet->GetVictim() || pPet->GetVictim()->GetGUID() != pVictim->GetGUID()) {
-            pPet->GetCharmInfo()->SetIsCommandAttack(true);
-            pPet->AI()->AttackStart(pVictim);
+            WorldPacket p;
+            p << pPet->GetGUID();
+            p << MAKE_UNIT_ACTION_BUTTON(CommandStates::COMMAND_ATTACK, ActiveStates::ACT_COMMAND);
+            p << pVictim->GetGUID();
+            ai->me->GetSession()->HandlePetAction(p);
         }
     return 0;
 }
 
 
 /// <summary>
-/// If unit has pet tries to make it cast an ability
+/// If AI has a pet, sets that pets autocast for spell to value of enable.
 /// </summary>
-/// <param name="unit userdata">- Pet owner</param>
+/// <param name="unit userdata">- AI.</param>
+/// <param name="spellID uint32">- spell id.</param>
+/// <param name="enable bool">- enable autocast.</param>
+int LuaBindsAI::AI_PetAutocast(lua_State* L) {
+
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 spellID = luaL_checkinteger(L, 2);
+    bool enable = luaL_checkboolean(L, 3);
+
+    if (Pet* pPet = ai->me->GetPet()) {
+
+        const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellID);
+        if (!spell)
+            luaL_error(L, "AI.PetAutocast: spell doesn't exist %d", spellID);
+
+        pPet->ToggleAutocast(spell, enable);
+        if (pPet->GetCharmInfo())
+            pPet->GetCharmInfo()->SetSpellAutocast(spell, enable);
+
+    }
+
+    return 0;
+
+}
+
+/// <summary>
+/// If AI has pet tries to make it cast an ability
+/// </summary>
+/// <param name="AI userdata">- Pet owner</param>
 /// <param name="unit userdata">- Target of spell</param>
 /// <param name="int">- Spell ID</param>
 /// <returns>int - Spell cast result</returns>
@@ -912,6 +943,39 @@ int LuaBindsAI::AI_PetCast(lua_State* L) {
     return 1;
 }
 
+
+/// <summary>
+/// If unit has pet makes pet follow.
+/// </summary>
+/// <param name="unit userdata">- Pet owner</param>
+int LuaBindsAI::AI_PetFollow(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    if (Pet* pPet = ai->me->GetPet()) {
+        WorldPacket p;
+        p << pPet->GetGUID();
+        p << MAKE_UNIT_ACTION_BUTTON(CommandStates::COMMAND_FOLLOW, ActiveStates::ACT_COMMAND);
+        p << ObjectGuid::Empty;
+        ai->me->GetSession()->HandlePetAction(p);
+    }
+    return 0;
+}
+
+
+/// <summary>
+/// If unit has pet issues pet stay command.
+/// </summary>
+/// <param name="unit userdata">- Pet owner</param>
+int LuaBindsAI::AI_PetStay(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    if (Pet* pPet = ai->me->GetPet()) {
+        WorldPacket p;
+        p << pPet->GetGUID();
+        p << MAKE_UNIT_ACTION_BUTTON(CommandStates::COMMAND_STAY, ActiveStates::ACT_COMMAND);
+        p << ObjectGuid::Empty;
+        ai->me->GetSession()->HandlePetAction(p);
+    }
+    return 0;
+}
 
 // -----------------------------------------------------------
 //                      Movement RELATED

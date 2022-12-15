@@ -289,8 +289,10 @@ void WorldSession::LogUnprocessedTail(WorldPacket* packet)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
-    if (_player && _player->IsLuaBot())
+    if (_player && _player->IsLuaBot()) {
+        ProcessQueryCallbacks();
         return true;
+    }
     ///- Before we process anything:
     /// If necessary, kick the player because the client didn't send anything for too long
     /// (or they've been idling in character select)

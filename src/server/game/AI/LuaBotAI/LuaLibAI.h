@@ -95,7 +95,10 @@ namespace LuaBindsAI {
     int AI_SummonPetIfNeeded(lua_State* L);
     int AI_GetPet(lua_State* L);
     int AI_PetAttack(lua_State* L);
+    int AI_PetAutocast(lua_State* L);
     int AI_PetCast(lua_State* L);
+    int AI_PetFollow(lua_State* L);
+    int AI_PetStay(lua_State* L);
 
     // movement related
 
@@ -189,7 +192,10 @@ namespace LuaBindsAI {
         {"SummonPetIfNeeded", AI_SummonPetIfNeeded},
         {"GetPet", AI_GetPet},
         {"PetAttack", AI_PetAttack},
+        {"PetAutocast", AI_PetAutocast},
         {"PetCast", AI_PetCast},
+        {"PetFollow", AI_PetFollow},
+        {"PetStay", AI_PetStay},
         // {"Mount", AI_PetCasterChaseDist},
 
         // movement related
