@@ -455,7 +455,6 @@ int LuaBindsAI::Unit_GetRelativeAngle(lua_State* L) {
 }
 
 
-
 int LuaBindsAI::Unit_IsInWorld(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushboolean(L, unit->IsInWorld());
