@@ -99,7 +99,7 @@ int LuaBindsAI::Unit_GetClass(lua_State* L) {
 
 int LuaBindsAI::Unit_GetLevel(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
-    lua_pushinteger(L, unit->getLevel());
+    lua_pushinteger(L, unit->GetLevel());
     return 1;
 }
 

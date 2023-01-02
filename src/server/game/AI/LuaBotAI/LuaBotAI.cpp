@@ -83,8 +83,8 @@ void LuaBotAI::Init() {
     if (userTblRef == LUA_NOREF)
         CreateUserTbl();
 
-    if (me->getLevel() != master->getLevel()) {
-        me->GiveLevel(master->getLevel());
+    if (me->GetLevel() != master->GetLevel()) {
+        me->GiveLevel(master->GetLevel());
     }
     me->UpdateSkillsToMaxSkillsForLevel();
 
@@ -450,7 +450,7 @@ void LuaBotAI::AddAmmo()
 
                     if (pProto->Class == ITEM_CLASS_PROJECTILE &&
                         pProto->SubClass == ammoType &&
-                        pProto->RequiredLevel <= me->getLevel() &&
+                        pProto->RequiredLevel <= me->GetLevel() &&
                         (!pAmmoProto || pAmmoProto->ItemLevel < pProto->ItemLevel) &&
                         me->CanUseAmmo(pProto->ItemId) == EQUIP_ERR_OK)
                     {
@@ -479,14 +479,14 @@ void LuaBotAI::EquipRandomGear()
     case CLASS_WARRIOR:
     case CLASS_PALADIN:
     {
-        if (me->getLevel() >= 40 && !me->HasSpell(750))
+        if (me->GetLevel() >= 40 && !me->HasSpell(750))
             me->learnSpell(750, false, false);
         break;
     }
     case CLASS_HUNTER:
     case CLASS_SHAMAN:
     {
-        if (me->getLevel() >= 40 && !me->HasSpell(8737))
+        if (me->GetLevel() >= 40 && !me->HasSpell(8737))
             me->learnSpell(8737, false, false);
         break;
     }
@@ -533,15 +533,15 @@ void LuaBotAI::EquipRandomGear()
             continue;
 
         // green or higher only after 14
-        if (me->getLevel() > 14 && pProto->Quality < ITEM_QUALITY_UNCOMMON)
+        if (me->GetLevel() > 14 && pProto->Quality < ITEM_QUALITY_UNCOMMON)
             continue;
 
         // blue or higher only after 30
-        if (me->getLevel() > 30 && pProto->Quality < ITEM_QUALITY_RARE)
+        if (me->GetLevel() > 30 && pProto->Quality < ITEM_QUALITY_RARE)
             continue;
 
         // Avoid low level items
-        if ((pProto->ItemLevel + 10) < me->getLevel())
+        if ((pProto->ItemLevel + 10) < me->GetLevel())
             continue;
 
         if (me->CanUseItem(pProto) != EQUIP_ERR_OK)
@@ -1013,7 +1013,7 @@ bool LuaBotAI::ShouldAutoRevive() const
 
             if (pMember->IsAlive())
             {
-                if (pMember->getLevel() > 13)
+                if (pMember->GetLevel() > 13)
                     if (pMember->getClass() == CLASS_PRIEST ||
                         pMember->getClass() == CLASS_DRUID ||
                         pMember->getClass() == CLASS_PALADIN ||
@@ -1036,7 +1036,7 @@ void LuaBotAI::SummonPetIfNeeded(uint32 petId)
         if (me->GetCharm())
             return;
 
-        if (me->getLevel() < 10)
+        if (me->GetLevel() < 10)
             return;
 
         if (me->GetPet())
@@ -1059,7 +1059,7 @@ void LuaBotAI::SummonPetIfNeeded(uint32 petId)
             me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0.0f,
             TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 3000))
         {
-            pCreature->SetLevel(me->getLevel());
+            pCreature->SetLevel(me->GetLevel());
             me->CastSpell(pCreature, SPELL_TAME_BEAST, true);
         }
     }
@@ -1352,7 +1352,7 @@ uint32 LuaBotAI::GetSpellMaxRankForLevel(uint32 spellID, uint32 level) {
 
 
 uint32 LuaBotAI::GetSpellMaxRankForMe(uint32 spellID) {
-    return GetSpellMaxRankForLevel(spellID, me->getLevel());
+    return GetSpellMaxRankForLevel(spellID, me->GetLevel());
 }
 
 

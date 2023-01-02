@@ -57,7 +57,7 @@ bool LuaBindsAI::IsValidHostileTarget(Unit* me, Unit const* pTarget) {
 
 void LuaBindsAI::SatisfyItemRequirements(Player* me, ItemTemplate const* pItem)
 {
-    if (me->getLevel() < pItem->RequiredLevel)
+    if (me->GetLevel() < pItem->RequiredLevel)
     {
         me->GiveLevel(pItem->RequiredLevel);
         me->InitTalentForLevel();

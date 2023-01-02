@@ -79,7 +79,7 @@ int LuaBindsAI::Player_EquipItem(lua_State* L) {
     const ItemTemplate* pProto = sObjectMgr->GetItemTemplate(id);
     if (pProto) {
 
-        if (pProto->RequiredLevel > player->getLevel()) {
+        if (pProto->RequiredLevel > player->GetLevel()) {
             lua_pushboolean(L, false);
             return 1;
         }
