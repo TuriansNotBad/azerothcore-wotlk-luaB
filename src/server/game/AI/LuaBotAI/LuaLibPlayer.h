@@ -40,6 +40,7 @@ namespace LuaBindsAI {
     int Player_GetGroupTbl(lua_State* L);
     int Player_GetGroupThreatTbl(lua_State* L);
     int Player_GetPartyLeader(lua_State* L);
+    int Player_GetSubGroup(lua_State* L);
     int Player_IsGroupLeader(lua_State* L);
     int Player_IsInGroup(lua_State* L);
     int Player_GetRole(lua_State* L);
@@ -78,6 +79,7 @@ namespace LuaBindsAI {
         {"GetGroupTbl", Player_GetGroupTbl},
         {"GetGroupThreatTbl", Player_GetGroupThreatTbl},
         {"GetPartyLeader", Player_GetPartyLeader},
+        {"GetSubGroup", Player_GetSubGroup},
         {"IsGroupLeader", Player_IsGroupLeader},
         {"IsInGroup", Player_IsInGroup},
         {"GetRole", Player_GetRole},

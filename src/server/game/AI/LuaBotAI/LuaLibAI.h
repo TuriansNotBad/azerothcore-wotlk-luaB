@@ -76,6 +76,7 @@ namespace LuaBindsAI {
     int AI_LearnSpell(lua_State* L);
     int AI_LearnTalent(lua_State* L);
     int AI_HasSpell(lua_State* L);
+    int AI_HasTalent(lua_State* L);
     int AI_GetTalentTbl(lua_State* L);
     int AI_ResetTalents(lua_State* L);
     
@@ -175,6 +176,7 @@ namespace LuaBindsAI {
         {"LearnSpell", AI_LearnSpell},
         {"LearnTalent", AI_LearnTalent},
         {"HasSpell", AI_HasSpell},
+        {"HasTalent", AI_HasTalent},
         {"GetTalentTbl", AI_GetTalentTbl},
         {"ResetTalents", AI_ResetTalents},
 

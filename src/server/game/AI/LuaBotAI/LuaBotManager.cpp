@@ -58,6 +58,8 @@ void LuaBotManager::LuaLoadFiles(const std::string& fpath) {
         return;
     if (!LuaDofile((fpath + "/goal_list.lua")))
         return;
+    if (!LuaDofile((fpath + "/ai_define.lua")))
+        return;
 
     // do all files recursively
     for (const auto& entry : fs::recursive_directory_iterator(fpath))

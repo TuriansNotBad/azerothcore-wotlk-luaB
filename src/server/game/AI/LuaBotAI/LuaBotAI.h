@@ -135,7 +135,7 @@ public:
     void AttackStopAutoshot();
     void AddItemToInventory(uint32 itemId, uint32 count = 1);
     void AddAmmo();
-    bool DrinkAndEat();
+    bool DrinkAndEat(float healthPer, float manaPer);
     void EquipRandomGear();
     uint8 GetAttackersInRangeCount(float range) const;
     Unit* GetMarkedTarget(RaidTargetIcon mark) const;

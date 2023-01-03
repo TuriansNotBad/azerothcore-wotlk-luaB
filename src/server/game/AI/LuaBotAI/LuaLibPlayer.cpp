@@ -313,6 +313,15 @@ int LuaBindsAI::Player_GetGroupThreatTbl(lua_State* L) {
     return 1;
 }
 
+int LuaBindsAI::Player_GetSubGroup(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    if (player->GetGroup())
+        lua_pushinteger(L, player->GetSubGroup());
+    else
+        lua_pushnil(L);
+    return 1;
+}
+
 
 int LuaBindsAI::Player_IsGroupLeader(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);

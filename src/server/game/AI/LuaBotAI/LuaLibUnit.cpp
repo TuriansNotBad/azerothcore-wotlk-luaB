@@ -567,11 +567,36 @@ int LuaBindsAI::Unit_AddThreat(lua_State* L) {
 
 
 int LuaBindsAI::Unit_CastSpell(lua_State* L) {
+
     Unit* unit = *Unit_GetUnitObject(L);
     Unit* target = *Unit_GetUnitObject(L, 2);
     int spellId = luaL_checkinteger(L, 3);
     bool triggered = luaL_checkboolean(L, 4);
-    lua_pushinteger(L, unit->CastSpell(target, spellId, triggered));
+
+    SpellCastResult castResult = unit->CastSpell(target, spellId, triggered);
+    // give reagent and retry
+    if (castResult == SPELL_FAILED_NEED_AMMO_POUCH ||
+        castResult == SPELL_FAILED_ITEM_NOT_READY || castResult == SPELL_FAILED_REAGENTS)
+    {
+        auto pSpellEntry = sSpellMgr->GetSpellInfo(spellId);
+        if (pSpellEntry->Reagent[0] && unit->IsPlayer())
+        {
+            if (Player* player = unit->ToPlayer())
+            {
+                if (LuaBotAI* ai = player->GetLuaAI())
+                {
+                    if (Item* pItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START))
+                        player->DestroyItem(INVENTORY_SLOT_BAG_0, INVENTORY_SLOT_ITEM_START, true);
+
+                    ai->AddItemToInventory(pSpellEntry->Reagent[0]);
+                    castResult = player->CastSpell(target, pSpellEntry, triggered);
+                }
+            }
+        }
+    }
+
+    lua_pushinteger(L, castResult);
+
     return 1;
 }
 

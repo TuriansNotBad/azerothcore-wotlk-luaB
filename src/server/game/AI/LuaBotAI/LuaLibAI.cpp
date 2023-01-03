@@ -105,7 +105,9 @@ int LuaBindsAI::AI_GetUserTbl(lua_State* L) {
 
 int LuaBindsAI::AI_DrinkAndEat(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
-    lua_pushboolean(L, ai->DrinkAndEat());
+    float healthPer = luaL_checknumber(L, 2);
+    float manaPer = luaL_checknumber(L, 3);
+    lua_pushboolean(L, ai->DrinkAndEat(healthPer, manaPer));
     return 1;
 }
 
@@ -634,6 +636,40 @@ int LuaBindsAI::AI_HasSpell(lua_State* L) {
     if (!sSpellMgr->GetSpellInfo(spellID))
         luaL_error(L, "AI.HasSpell: spell doesn't exist %d", spellID);
     lua_pushboolean(L, ai->me->HasSpell(spellID));
+    return 1;
+}
+
+
+int LuaBindsAI::AI_HasTalent(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    uint32 talentID = luaL_checkinteger(L, 2);
+
+    TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentID);
+    if (!talentInfo)
+        luaL_error(L, "AI.LearnTalent: talent doesn't exist %d", talentID);
+
+    uint32 talentRank = luaL_checkinteger(L, 3);
+    if (talentRank >= MAX_TALENT_RANK)
+        luaL_error(L, "AI.LearnTalent: talent rank cannot exceed %d", MAX_TALENT_RANK - 1);
+
+    TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+    if (!talentTabInfo)
+        luaL_error(L, "AI.LearnTalent: talent tab not found for talent %d", talentID);
+
+    uint32 classMask = ai->me->getClassMask();
+    if ((classMask & talentTabInfo->ClassMask) == 0)
+        luaL_error(L, "AI.LearnTalent: class mask and talent class mask do not match cls = %d, talent = %d", classMask, talentTabInfo->ClassMask);
+
+    // search specified rank
+    uint32 spellid = talentInfo->RankID[talentRank];
+    if (!spellid)                                       // ??? none spells in talent
+        luaL_error(L, "AI.LearnTalent: talent %d rank %d not found", talentID, talentRank);
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
+        luaL_error(L, "AI.LearnTalent: talent %d spell %d is not valid for player or doesn't exist", talentID, spellid);
+
+    lua_pushboolean(L, ai->me->HasTalent(spellid, ai->me->GetActiveSpec()));
     return 1;
 }
 

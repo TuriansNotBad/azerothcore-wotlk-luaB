@@ -169,6 +169,20 @@ void LuaBotAI::Update(uint32 diff) {
     if (!m_initialized)
         Init();
 
+    if (me->GetLevel() != master->GetLevel() && !me->IsInCombat() && master->GetLevel() <= 80) {
+
+        // destroy all gear so its regenerated
+        for (int slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; slot++)
+            if (me->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                me->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+
+        Reset(false);
+        m_initialized = false;
+
+        return;
+
+    }
+
     // Not initialized
     if (userDataRef == LUA_NOREF || userDataPlayerRef == LUA_NOREF || userTblRef == LUA_NOREF) {
         LOG_ERROR("luabots", "LuaAI Core: Attempt to update bot with uninitialized reference... [{}, {}, {}]. Ceasing.\n", userDataRef, userDataPlayerRef, userTblRef);
@@ -358,20 +372,21 @@ void LuaBotAI::AttackStopAutoshot() {
     }
 }
 
-bool LuaBotAI::DrinkAndEat()
+bool LuaBotAI::DrinkAndEat(float healthPer, float manaPer)
 {
 
     if (me->GetVictim())
+    {
+        if (me->getStandState() != UnitStandStateType::UNIT_STAND_STATE_STAND)
+            me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_STAND);
         return false;
+    }
 
-    bool const needToEat = me->GetHealthPct() < 100.0f;
-    bool const needToDrink = (me->getPowerType() == POWER_MANA) && (me->GetPowerPct(POWER_MANA) < 100.0f);
+    bool const needToEat = me->GetHealthPct() < healthPer;
+    bool const needToDrink = (me->getPowerType() == POWER_MANA) && (me->GetPowerPct(POWER_MANA) < manaPer);
 
-    if (!needToEat && !needToDrink)
-        return false;
-
-    bool const isEating = me->HasAura(PB_SPELL_FOOD);
-    bool const isDrinking = me->HasAura(PB_SPELL_DRINK);
+    bool const isEating = me->HasAura(64355);
+    bool const isDrinking = me->HasAura(64356);
 
     if (!isEating && needToEat)
     {
@@ -404,6 +419,13 @@ bool LuaBotAI::DrinkAndEat()
         }
         return true;
     }
+
+    bool _interruptEat = !isEating || (isEating && me->GetHealthPct() > 99.0f);
+    bool _interruptDrink = !isDrinking || (isDrinking && me->GetPowerPct(Powers::POWER_MANA) > 99.0f);
+    bool _interruptOkay = _interruptEat && _interruptDrink;
+
+    if ((isEating || isDrinking) && _interruptOkay)
+        me->SetStandState(UnitStandStateType::UNIT_STAND_STATE_STAND);
 
     return needToEat || needToDrink;
 }
@@ -734,7 +756,7 @@ SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntr
 
     // stop and retry
     if ((result == SPELL_FAILED_MOVING || result == SPELL_CAST_OK) &&
-        (pSpellEntry->CalcCastTime(me) > 0) &&
+        // (pSpellEntry->CalcCastTime(me) > 0) &&
         me->isMoving())
     {
         me->StopMoving();
