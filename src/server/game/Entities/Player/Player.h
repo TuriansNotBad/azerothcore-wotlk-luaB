@@ -1787,6 +1787,7 @@ public:
     void SetLastPotionId(uint32 item_id) { m_lastPotionId = item_id; }
     void UpdatePotionCooldown(Spell* spell = nullptr);
 
+    ObjectGuid const& GetResurrector() const { return m_resurrectGUID; }
     void setResurrectRequestData(ObjectGuid guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
     {
         m_resurrectGUID = guid;

@@ -213,6 +213,16 @@ void WorldSession::SendPacket(WorldPacket const* packet)
         return;
     }
 
+    if (Player* player = GetPlayer())
+    {
+        if (LuaBotAI* luaAI = player->GetLuaAI())
+        {
+            WorldPacket pck(*packet);
+            luaAI->HandleSMSG(pck);
+            return;
+        }
+    }
+
     if (!m_Socket)
         return;
 

@@ -78,6 +78,7 @@ namespace LuaBindsAI {
     // combat related
     int Unit_AddAura(lua_State* L);
     int Unit_AddThreat(lua_State* L);
+    int Unit_CalculateSpellEffect(lua_State* L);
     int Unit_CastSpell(lua_State* L);
     int Unit_ClearTarget(lua_State* L);
     int Unit_GetAttackersTbl(lua_State* L);
@@ -115,6 +116,7 @@ namespace LuaBindsAI {
     int Unit_IsValidHostileTarget(lua_State* L);
     int Unit_IsWithinLOSInMap(lua_State* L);
     int Unit_RemoveAura(lua_State* L);
+    int Unit_RemoveAuraByCancel(lua_State* L);
     int Unit_RemoveSpellsCausingAura(lua_State* L);
     int Unit_SetHealth(lua_State* L);
     int Unit_SetHealthPercent(lua_State* L);
@@ -194,6 +196,7 @@ namespace LuaBindsAI {
         // combat related
         {"AddAura", Unit_AddAura},
         {"AddThreat", Unit_AddThreat},
+        {"CalculateSpellEffect", Unit_CalculateSpellEffect},
         {"CastSpell", Unit_CastSpell},
         {"ClearTarget", Unit_ClearTarget},
 
@@ -238,6 +241,7 @@ namespace LuaBindsAI {
         {"IsWithinLOSInMap", Unit_IsWithinLOSInMap},
 
         {"RemoveAura", Unit_RemoveAura},
+        {"RemoveAuraByCancel", Unit_RemoveAuraByCancel},
         {"RemoveSpellsCausingAura", Unit_RemoveSpellsCausingAura},
 
         {"SetHealth", Unit_SetHealth},

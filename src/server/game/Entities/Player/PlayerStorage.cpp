@@ -7257,6 +7257,9 @@ void Player::_SaveAuras(CharacterDatabaseTransaction trans, bool logout)
 
 void Player::_SaveInventory(CharacterDatabaseTransaction trans)
 {
+
+    if (IsLuaBot()) return;
+
     CharacterDatabasePreparedStatement* stmt = nullptr;
     // force items in buyback slots to new state
     // and remove those that aren't already

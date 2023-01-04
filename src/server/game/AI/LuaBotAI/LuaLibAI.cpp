@@ -9,6 +9,7 @@
 #include "MovementGenerator.h"
 #include "Pet.h"
 #include "CreatureAI.h"
+#include "Spell.h"
 
 
 void LuaBindsAI::BindAI( lua_State* L ) {
@@ -370,6 +371,24 @@ int LuaBindsAI::AI_DoCastSpell(lua_State* L) {
         lua_pushinteger(L, ai->DoCastSpell(pTarget, spell));
     else
         luaL_error(L, "AI.DoCastSpell spell doesn't exist. Id = %d", spellId);
+    return 1;
+}
+
+
+int LuaBindsAI::AI_IsCastingHeal(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Spell* pCurrentSpell = ai->me->GetCurrentSpell(CurrentSpellTypes::CURRENT_GENERIC_SPELL);
+    if (!pCurrentSpell)
+        pCurrentSpell = ai->me->GetCurrentSpell(CurrentSpellTypes::CURRENT_CHANNELED_SPELL);
+    if (!pCurrentSpell) {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    
+    if (auto pSpellInfo = pCurrentSpell->m_spellInfo)
+        lua_pushboolean(L, pSpellInfo->IsPositive());
+    else
+        lua_pushboolean(L, false);
     return 1;
 }
 

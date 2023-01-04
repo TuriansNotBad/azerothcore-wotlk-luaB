@@ -238,10 +238,29 @@ bool LuaBindsAI::IsShieldClass(uint8 playerClass)
 
 uint32 LuaBindsAI::GetHighestKnownArmorProficiency(Player* me)
 {
-    if (me->GetSkillValue(SKILL_PLATE_MAIL))
+    Classes cls = Classes(me->getClass());
+
+    switch (cls) {
+    case CLASS_DEATH_KNIGHT:
         return SKILL_PLATE_MAIL;
-    if (me->GetSkillValue(SKILL_MAIL))
-        return SKILL_MAIL;
+    case CLASS_WARRIOR:
+    case CLASS_PALADIN:
+    {
+        if (me->GetLevel() >= 40 && me->GetSkillValue(SKILL_PLATE_MAIL) && me->HasSpell(750))
+            return SKILL_PLATE_MAIL;
+        else
+            return SKILL_MAIL;
+    }
+    case CLASS_HUNTER:
+    case CLASS_SHAMAN:
+    {
+        if (me->GetLevel() >= 40 && me->HasSpell(8737) && me->GetSkillValue(SKILL_MAIL))
+            return SKILL_MAIL;
+        else
+            return SKILL_LEATHER;
+    }
+    }
+
     if (me->GetSkillValue(SKILL_LEATHER))
         return SKILL_LEATHER;
     return SKILL_CLOTH;

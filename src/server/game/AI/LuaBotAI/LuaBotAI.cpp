@@ -169,20 +169,6 @@ void LuaBotAI::Update(uint32 diff) {
     if (!m_initialized)
         Init();
 
-    if (me->GetLevel() != master->GetLevel() && !me->IsInCombat() && master->GetLevel() <= 80) {
-
-        // destroy all gear so its regenerated
-        for (int slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; slot++)
-            if (me->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-                me->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-
-        Reset(false);
-        m_initialized = false;
-
-        return;
-
-    }
-
     // Not initialized
     if (userDataRef == LUA_NOREF || userDataPlayerRef == LUA_NOREF || userTblRef == LUA_NOREF) {
         LOG_ERROR("luabots", "LuaAI Core: Attempt to update bot with uninitialized reference... [{}, {}, {}]. Ceasing.\n", userDataRef, userDataPlayerRef, userTblRef);
@@ -200,6 +186,21 @@ void LuaBotAI::Update(uint32 diff) {
     // master not available, do not update
     if (!master->IsInWorld() || master->IsBeingTeleported() || master->isBeingLoaded())
         return;
+
+    if (me->GetLevel() != master->GetLevel() && !me->IsInCombat() && master->GetLevel() <= 80) {
+
+        // destroy all gear so its regenerated
+        for (int slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; slot++)
+            if (me->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                me->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+
+        Reset(false);
+        m_initialized = false;
+
+        return;
+
+    }
+
     // do not gain XP
     me->SetUInt32Value(PLAYER_XP, 0);
     // master in taxi?
@@ -555,11 +556,11 @@ void LuaBotAI::EquipRandomGear()
             continue;
 
         // green or higher only after 14
-        if (me->GetLevel() > 14 && pProto->Quality < ITEM_QUALITY_UNCOMMON)
+        if (me->GetLevel() > 19 && pProto->Quality < ITEM_QUALITY_UNCOMMON)
             continue;
 
         // blue or higher only after 30
-        if (me->GetLevel() > 30 && pProto->Quality < ITEM_QUALITY_RARE)
+        if (me->GetLevel() > 44 && pProto->Quality < ITEM_QUALITY_RARE)
             continue;
 
         // Avoid low level items
@@ -611,6 +612,19 @@ void LuaBotAI::EquipRandomGear()
                         roleID != ROLE_HEALER && roleID != ROLE_RDPS)
                         continue;
                 }
+
+                // no trinkets below 20
+                if ((slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2) && me->GetLevel() < 20)
+                    continue;
+
+                // no rings/shoulders under 10
+                if ((slot == EQUIPMENT_SLOT_SHOULDERS || slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2)
+                    && me->GetLevel() < 10)
+                    continue;
+
+                // no amulets/hats under 15
+                if ((slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD) && me->GetLevel() < 15)
+                    continue;
 
                 itemsPerSlot[slot].push_back(pProto);
 
@@ -1346,7 +1360,7 @@ uint32 LuaBotAI::GetSpellMaxRankForLevel(uint32 spellID, uint32 level) {
 
     // too low level in general?
     if (level < info_first->SpellLevel)
-        return 0;
+        return info_first->Id;
 
     auto info_final = info_first;
     auto info_next = info_first;
@@ -1487,6 +1501,27 @@ void LuaBotAI::EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlo
 }
 
 // GROUP
+
+void LuaBotAI::HandleSMSG(WorldPacket const& packet) {
+
+    if (packet.empty())
+        return;
+
+    switch (packet.GetOpcode())
+    {
+    case SMSG_RESURRECT_REQUEST:
+    {
+        WorldPacket data(CMSG_RESURRECT_RESPONSE);
+        data << me->GetResurrector();
+        data << uint8(1);
+        me->GetSession()->HandleResurrectResponseOpcode(data);
+        break;
+    }
+    default:
+        break;
+    }
+
+}
 
 // TESTING
 

@@ -242,6 +242,7 @@ public:
     void EquipEnchant(uint32 enchantID, EnchantmentSlot slot, EquipmentSlots itemSlot, int duration, int charges);
 
     //
+    void HandleSMSG(WorldPacket const& packet);
 
     // Testing
 

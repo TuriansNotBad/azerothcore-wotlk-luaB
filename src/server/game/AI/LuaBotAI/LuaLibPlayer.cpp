@@ -318,7 +318,7 @@ int LuaBindsAI::Player_GetSubGroup(lua_State* L) {
     if (player->GetGroup())
         lua_pushinteger(L, player->GetSubGroup());
     else
-        lua_pushnil(L);
+        lua_pushinteger(L, 0);
     return 1;
 }
 

@@ -566,6 +566,22 @@ int LuaBindsAI::Unit_AddThreat(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_CalculateSpellEffect(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* target = *Unit_GetUnitObject(L, 2);
+    int spellID = luaL_checkinteger(L, 3);
+    int spellEffectIndex = luaL_checkinteger(L, 4);
+
+    auto spell = sSpellMgr->GetSpellInfo(spellID);
+    if (!spell)
+        luaL_error(L, "Unit.CalculateSpellEffect: spell %d doesn't exist", spellID);
+    if (spellEffectIndex < 0 || spellEffectIndex >= MAX_SPELL_EFFECTS)
+        luaL_error(L, "Unit.CalculateSpellEffect: spell effect index out of bounds. [0, %d)", MAX_SPELL_EFFECTS);
+    lua_pushnumber(L, unit->CalculateSpellDamage(target, spell, spellEffectIndex));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_CastSpell(lua_State* L) {
 
     Unit* unit = *Unit_GetUnitObject(L);
@@ -966,6 +982,15 @@ int LuaBindsAI::Unit_RemoveAura(lua_State* L) {
     uint32 auraId = luaL_checkinteger(L, 2);
     if (Aura* aura = unit->GetAura(auraId))
         unit->RemoveAura(aura);
+    return 0;
+}
+
+
+int LuaBindsAI::Unit_RemoveAuraByCancel(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    uint32 auraId = luaL_checkinteger(L, 2);
+    if (Aura* aura = unit->GetAura(auraId))
+        unit->RemoveAura(aura, AuraRemoveMode::AURA_REMOVE_BY_CANCEL);
     return 0;
 }
 

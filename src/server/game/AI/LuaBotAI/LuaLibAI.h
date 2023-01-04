@@ -47,6 +47,7 @@ namespace LuaBindsAI {
 
     int AI_CanTryToCastSpell(lua_State* L);
     int AI_DoCastSpell(lua_State* L);
+    int AI_IsCastingHeal(lua_State* L);
 
     int AI_GetAttackersInRangeCount(lua_State* L);
     int AI_GetClass(lua_State* L);
@@ -149,6 +150,8 @@ namespace LuaBindsAI {
 
         {"CanTryToCastSpell", AI_CanTryToCastSpell},
         {"DoCastSpell", AI_DoCastSpell},
+        {"IsCastingHeal", AI_IsCastingHeal},
+
         {"GetAttackersInRangeCount", AI_GetAttackersInRangeCount},
         {"GetClass", AI_GetClass},
         {"GetMarkedTarget", AI_GetMarkedTarget},
