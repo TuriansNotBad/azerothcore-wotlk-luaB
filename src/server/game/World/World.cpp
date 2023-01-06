@@ -2835,6 +2835,7 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode, const std:
         ShutdownMsg(true, nullptr, reason);
     }
 
+    sLuaBotMgr.LogoutAllBots();
     sScriptMgr->OnShutdownInitiate(ShutdownExitCode(exitcode), ShutdownMask(options));
 }
 

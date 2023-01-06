@@ -76,9 +76,10 @@ public:
     int roleID;
     Player* me; // changing this is a bad idea
     Player* master;
+    ObjectGuid masterGuid;
     bool ceaseUpdates;
 
-    LuaBotAI(Player* me, Player* master, int logicID);
+    LuaBotAI(Player* me, Player* master, ObjectGuid masterGuid, int logicID);
     ~LuaBotAI();
 
 

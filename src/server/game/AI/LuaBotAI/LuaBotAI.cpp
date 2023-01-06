@@ -34,9 +34,10 @@ enum PartyBotSpells
 
 const char* LuaBotAI::MTNAME = "LuaObject.AI";
 
-LuaBotAI::LuaBotAI(Player* me, Player* master, int logicID) :
+LuaBotAI::LuaBotAI(Player* me, Player* master, ObjectGuid masterGuid, int logicID) :
     me(me),
     master(master),
+    masterGuid(masterGuid),
     m_initialized(false),
 
     ceaseUpdates(false),
@@ -74,6 +75,8 @@ Goal* LuaBotAI::AddTopGoal(int goalId, double life, std::vector<GoalParamP>& goa
 
 void LuaBotAI::Init() {
 
+    master = ObjectAccessor::FindConnectedPlayer(masterGuid);
+
     L = sLuaBotMgr.Lua();
 
     if (userDataRef == LUA_NOREF)
@@ -95,6 +98,8 @@ void LuaBotAI::Init() {
 
 
 void LuaBotAI::Reset(bool dropRefs) {
+
+    L = sLuaBotMgr.Lua();
 
     // clear goals
     topGoal = Goal(-1, 0, Goal::NOPARAMS, nullptr, nullptr);
@@ -159,8 +164,14 @@ void LuaBotAI::Update(uint32 diff) {
     // hardcoded cease all logic ID
     if (logicID == -1) return;
 
+    // master?
+    master = ObjectAccessor::FindConnectedPlayer(masterGuid);
+
     // bad pointers
-    if (!me || !master) return;
+    if (!me || !master) {
+        topGoal.SetTerminated(true);
+        return;
+    }
 
     // unsafe to handle
     if (!me->IsInWorld() || me->IsBeingTeleported() || me->isBeingLoaded())
@@ -184,8 +195,11 @@ void LuaBotAI::Update(uint32 diff) {
     }
 
     // master not available, do not update
-    if (!master->IsInWorld() || master->IsBeingTeleported() || master->isBeingLoaded())
+    if (!master->IsInWorld() || master->IsBeingTeleported() || master->isBeingLoaded()) {
+        // add a dealy here, seems to be some clinetside issue with visuals not updating on teleport
+        m_updateTimer.Reset(1000);
         return;
+    }
 
     if (me->GetLevel() != master->GetLevel() && !me->IsInCombat() && master->GetLevel() <= 80) {
 
@@ -756,8 +770,10 @@ bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bo
 
 SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry)
 {
-    if (me != pTarget)
-        me->SetFacingToObject(pTarget);
+    if (me != pTarget) {
+        if ((pSpellEntry->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT) && !me->HasInArc(static_cast<float>(M_PI) / 2.0f, pTarget))
+            me->SetFacingToObject(pTarget);
+    }
     
     if (me->IsMounted())
         me->RemoveAurasByType(AuraType::SPELL_AURA_MOUNTED);
@@ -821,19 +837,22 @@ bool LuaBotAI::HandleSummonCommand(Player* target)
     if (target->GetGUID() == me->GetGUID())
         return false;
 
-    return ChatHandler(target->GetSession()).ParseCommands(".summon " + me->GetName());;
+    bool result = ChatHandler(target->GetSession()).ParseCommands(".summon " + me->GetName());
+    //bool result = me->TeleportTo(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
+    //me->SendMovementFlagUpdate();
+    return result;
 }
 
 void LuaBotAI::GoPlayerCommand(Player* target) {
     // will crash if moving
-    if (!me->IsStopped())
+    if (me->IsStopped())
         me->StopMoving();
     me->AttackStop();
     me->GetMotionMaster()->Clear(false);
     me->GetMotionMaster()->MoveIdle();
     me->SetTarget();
-    topGoal = Goal(0, 0, Goal::NOPARAMS, nullptr, nullptr);
-    topGoal.SetTerminated(true);
+    //topGoal = Goal(0, 0, Goal::NOPARAMS, nullptr, nullptr);
+    //topGoal.SetTerminated(true);
     m_updateTimer.Reset(200);
     HandleSummonCommand(target);
 }

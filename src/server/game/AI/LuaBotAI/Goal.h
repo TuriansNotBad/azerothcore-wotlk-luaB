@@ -82,9 +82,13 @@ public:
 	int GetRef();
 	// Sets userdata key in the lua's registry.
 	void SetRef(int v);
-	// Returns user table ref
-	int GetUserTblRef() { return userTblRef; }
-	// Unref
+    // Returns user table ref
+    int GetUserTblRef() { return userTblRef; }
+    // Set user table ref
+    void SetUserTblRef(int v) { userTblRef = v; }
+    //  set lua
+    void SetLua(lua_State* L) { this->L = L; }
+    // Unref
 	void Unref(lua_State* L);
 
 	// Returns pointer to a param at specified index.

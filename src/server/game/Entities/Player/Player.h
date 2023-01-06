@@ -1068,10 +1068,10 @@ public:
     /// <param name="me">- bot's player obj.</param>
     /// <param name="master">- bot owner's player obj.</param>
     /// <param name="logicID">- lua logic ID.</param>
-    void CreateLuaAI(Player* me, Player* master, int logicID) {
+    void CreateLuaAI(Player* me, Player* master, ObjectGuid masterGuid, int logicID) {
         // Never replace existing ai object. Change logicId if necessary or better change logic in your master logic fn.
         if (!m_luaAI)
-            m_luaAI = std::make_unique<LuaBotAI>(me, master, logicID);
+            m_luaAI = std::make_unique<LuaBotAI>(me, master, masterGuid, logicID);
     }
     bool IsLuaBot() { return m_luaAI != nullptr; }
 

@@ -146,7 +146,7 @@ void LuaBotManager::HandlePlayerBotLoginCallback(LuaBotLoginQueryHolder const& h
         return;
     }
 
-    bot->CreateLuaAI(bot, holder.master, holder.logicID);
+    bot->CreateLuaAI(bot, holder.master, holder.master->GetGUID(), holder.logicID);
 
     LuaBotAI* botAI = bot->GetLuaAI();
     if (!botAI) return;
@@ -203,13 +203,17 @@ void LuaBotManager::LogoutPlayerBot(ObjectGuid guid)
 void LuaBotManager::LogoutAllBots() {
 
     for (auto itr = m_bots.begin(); itr != m_bots.end();)
-        if (Player* bot = itr._Ptr->_Myval.second)
+        if (Player* bot = itr._Ptr->_Myval.second) {
+
+            if (LuaBotAI* botAI = bot->GetLuaAI())
+                botAI->Reset(false); // destroy all goal objects
 
             if (LogoutPlayerBotInternal(bot->GetGUID()))
                 itr = m_bots.erase(itr);                 // deletes bot player ptr inside this WorldSession PlayerBotMap
             else
                 itr++;
-            
+
+        }
         else
             itr = m_bots.erase(itr); // delete invalid bot entry
 
@@ -223,10 +227,12 @@ void LuaBotManager::GroupAll(Player* owner) {
 
         if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
 
-            if (botAI->master && owner->GetGUID() == botAI->master->GetGUID()) {
+            Player* master = ObjectAccessor::FindPlayer(botAI->masterGuid);
+
+            if (master && owner->GetGUID() == botAI->masterGuid) {
 
                 // if group exists invite
-                if (Group * g = botAI->master->GetGroup()) {
+                if (Group * g = master->GetGroup()) {
                     if (g->GetMembersCount() > 4 && !g->isRaidGroup())
                         g->ConvertToRaid();
                     // already in group?
@@ -264,13 +270,19 @@ void LuaBotManager::GroupAll(Player* owner) {
 
 void LuaBotManager::ReviveAll(Player* owner, float health) {
     for (auto& bot : m_bots) {
+
         if (!bot.second || bot.second->IsAlive() || !bot.second->IsInWorld() || bot.second->isBeingLoaded() || bot.second->IsBeingTeleported()) continue;
 
         LuaBotAI* botAI = bot.second->GetLuaAI();
+        Player* master = nullptr;
+        if (botAI)
+            master = ObjectAccessor::FindPlayer(botAI->masterGuid);
+
         // owned bots only
-        if (botAI && botAI->master && owner->GetGUID() == botAI->master->GetGUID()) {
+        if (botAI && master && owner->GetGUID() == botAI->masterGuid) {
             bot.second->ResurrectPlayer(health, false);
         }
+
     }
 }
 
@@ -284,7 +296,6 @@ void LuaBotManager::Update(uint32 diff) {
         bLuaCeaseUpdates = false;
         bLuaReload = false;
 
-        LuaLoadAll();
 
         // Code to reset each bot in the loop here
         for (auto bot : m_bots) {
@@ -294,6 +305,7 @@ void LuaBotManager::Update(uint32 diff) {
                 botAI->CeaseUpdates(false);
             }
         }
+        LuaLoadAll();
         sWorld->SendServerMessage(SERVER_MSG_STRING, "Lua reload finished");
     }
 

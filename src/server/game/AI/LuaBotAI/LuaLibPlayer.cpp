@@ -198,6 +198,14 @@ int LuaBindsAI::Player_GetGroupAttackersTbl(lua_State* L) {
                     tblIdx++;
                 }
 
+            if (Pet* pet = pMember->GetPet())
+                for (const auto pAttacker : pet->getAttackers())
+                    if (IsValidHostileTarget(pMember, pAttacker)) {
+                        Unit_CreateUD(pAttacker, L); // pushes pAttacker userdata on top of stack
+                        lua_seti(L, -2, tblIdx); // stack[-2][tblIdx] = stack[-1], pops pAttacker
+                        tblIdx++;
+                    }
+
         }
     return 1;
 }

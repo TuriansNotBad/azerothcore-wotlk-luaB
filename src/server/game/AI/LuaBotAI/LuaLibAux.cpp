@@ -61,7 +61,7 @@ int LuaBindsAI::GetUnitByGuid(lua_State* L) {
 			luaL_error(L, "Exception caught. Passed string overflowed uint64 - %s\n", guidStr);
 		}
 		ObjectGuid oGuid(guid);
-        Unit* unit = ObjectAccessor::GetUnit(*unit, oGuid);
+        Unit* unit = ObjectAccessor::GetUnit(*(ai->me), oGuid);
 		if (unit)
 			Unit_CreateUD(unit, L);
 		else

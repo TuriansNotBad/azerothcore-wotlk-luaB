@@ -1041,7 +1041,8 @@ int LuaBindsAI::AI_GoName(lua_State* L) {
     LuaBotAI** ai = AI_GetAIObject(L);
     char name[128] = {};
     strcpy(name, luaL_checkstring(L, 2));
-    (*ai)->GoPlayerCommand(ObjectAccessor::FindPlayerByName(name));
+    if (Player* dest = ObjectAccessor::FindPlayerByName(name))
+        (*ai)->GoPlayerCommand(dest);
     return 0;
 }
 

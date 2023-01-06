@@ -52,7 +52,9 @@ namespace LuaBindsAI {
     int Unit_GetAngle(lua_State* L);
     int Unit_GetCollisionRadius(lua_State* L);
     int Unit_GetDistance(lua_State* L);
+    int Unit_GetDistance2D(lua_State* L);
     int Unit_GetDistanceToPos(lua_State* L);
+    int Unit_GetDistanceToPos2D(lua_State* L);
     int Unit_GetExactDist(lua_State* L);
     int Unit_GetGroundHeight(lua_State* L);
     int Unit_GetMapId(lua_State* L);
@@ -170,7 +172,9 @@ namespace LuaBindsAI {
         {"GetAngle", Unit_GetAngle},
         {"GetCollisionRadius", Unit_GetCollisionRadius},
         {"GetDistance", Unit_GetDistance},
+        {"GetDistance2D", Unit_GetDistance2D},
         {"GetDistanceToPos", Unit_GetDistanceToPos},
+        {"GetDistanceToPos2D", Unit_GetDistanceToPos2D},
         {"GetExactDist", Unit_GetExactDist},
         {"GetForwardVector", Unit_GetForwardVector},
         {"GetGroundHeight", Unit_GetGroundHeight},

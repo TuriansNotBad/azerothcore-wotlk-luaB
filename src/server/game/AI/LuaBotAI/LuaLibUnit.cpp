@@ -268,7 +268,10 @@ int LuaBindsAI::Unit_MovePoint(lua_State* L) {
     float x = luaL_checknumber(L, 3);
     float y = luaL_checknumber(L, 4);
     float z = luaL_checknumber(L, 5);
-    unit->GetMotionMaster()->MovePoint(data, x, y, z);
+    bool force = false;
+    if (lua_gettop(L) == 6)
+        force = luaL_checkboolean(L, 6);
+    unit->GetMotionMaster()->MovePoint(data, x, y, z, true, force);
     return 0;
 }
 
@@ -332,6 +335,14 @@ int LuaBindsAI::Unit_GetDistance(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetDistance2D(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    WorldObject* to = *WObj_GetWObjObject(L, 2);
+    lua_pushnumber(L, unit->GetDistance2d(to));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetDistanceToPos(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     //WorldObject* to = *WObj_GetWObjObject(L, 2);
@@ -339,6 +350,16 @@ int LuaBindsAI::Unit_GetDistanceToPos(lua_State* L) {
     float y = luaL_checknumber(L, 3);
     float z = luaL_checknumber(L, 4);
     lua_pushnumber(L, unit->GetDistance(x, y, z));
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetDistanceToPos2D(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    //WorldObject* to = *WObj_GetWObjObject(L, 2);
+    float x = luaL_checknumber(L, 2);
+    float y = luaL_checknumber(L, 3);
+    lua_pushnumber(L, unit->GetDistance2d(x, y));
     return 1;
 }
 
