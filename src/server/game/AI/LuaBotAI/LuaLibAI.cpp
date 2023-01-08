@@ -149,6 +149,27 @@ int LuaBindsAI::AI_AddBot(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_RemoveBot(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* toRemove = *Unit_GetUnitObject(L, 2);
+
+    if (!ai->master)
+        return 0;
+
+    if (!toRemove->IsPlayer())
+        return 0;
+
+    Player* plrToRemove = toRemove->ToPlayer();
+    if (!plrToRemove || !plrToRemove->IsLuaBot())
+        return 0;
+
+    if (LuaBotAI* aiToRemove = plrToRemove->GetLuaAI())
+        aiToRemove->RequestLogOut();
+
+    return 0;
+}
+
+
 int LuaBindsAI::AI_IsBotConnected(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     std::string name = luaL_checkstring(L, 2);

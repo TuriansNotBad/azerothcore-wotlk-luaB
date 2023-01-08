@@ -32,6 +32,7 @@ namespace LuaBindsAI {
 
     // movement related
     int Unit_GetCurrentMovementGeneratorType(lua_State* L);
+    int Unit_GetMotionSlotType(lua_State* L);
     int Unit_GetSpeedRate(lua_State* L);
     int Unit_GetStandState(lua_State* L);
     int Unit_IsMounted(lua_State* L);
@@ -57,6 +58,7 @@ namespace LuaBindsAI {
     int Unit_GetDistanceToPos2D(lua_State* L);
     int Unit_GetExactDist(lua_State* L);
     int Unit_GetGroundHeight(lua_State* L);
+    int Unit_GetInstanceId(lua_State* L);
     int Unit_GetMapId(lua_State* L);
     int Unit_GetNearPoint(lua_State* L);
     int Unit_GetNearPointAroundPosition(lua_State* L);
@@ -152,6 +154,7 @@ namespace LuaBindsAI {
 
         // movement related
         {"GetCurrentMovementGeneratorType", Unit_GetCurrentMovementGeneratorType},
+        {"GetMotionSlotType", Unit_GetMotionSlotType},
         {"GetStandState", Unit_GetStandState},
         {"GetSpeedRate", Unit_GetSpeedRate},
         {"IsMounted", Unit_IsMounted},
@@ -178,6 +181,7 @@ namespace LuaBindsAI {
         {"GetExactDist", Unit_GetExactDist},
         {"GetForwardVector", Unit_GetForwardVector},
         {"GetGroundHeight", Unit_GetGroundHeight},
+        {"GetInstanceId", Unit_GetInstanceId},
         {"GetMapId", Unit_GetMapId},
         {"GetNearPoint", Unit_GetNearPoint},
         {"GetNearPointAroundPosition", Unit_GetNearPointAroundPosition},

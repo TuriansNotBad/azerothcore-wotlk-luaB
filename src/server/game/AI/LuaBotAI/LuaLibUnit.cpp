@@ -180,6 +180,16 @@ int LuaBindsAI::Unit_GetCurrentMovementGeneratorType(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetMotionSlotType(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    int slot = luaL_checkinteger(L, 2);
+    if (slot < MOTION_SLOT_IDLE || slot >= MAX_MOTION_SLOT)
+        luaL_error(L, "Unit.GetMotionSlotType: motion slot out of bounds. [0, %d) allowed", MAX_MOTION_SLOT);
+    lua_pushinteger(L, unit->GetMotionMaster()->GetMotionSlotType(slot));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetSpeedRate(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushnumber(L, unit->GetSpeedRate(MOVE_RUN));
@@ -398,6 +408,13 @@ int LuaBindsAI::Unit_GetGroundHeight(lua_State* L) {
 int LuaBindsAI::Unit_GetMapId(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushinteger(L, unit->GetMapId());
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetInstanceId(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushinteger(L, unit->GetInstanceId());
     return 1;
 }
 

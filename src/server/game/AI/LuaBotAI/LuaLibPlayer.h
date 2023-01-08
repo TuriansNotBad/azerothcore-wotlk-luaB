@@ -16,6 +16,7 @@ namespace LuaBindsAI {
 
     // 
     int Player_InBattleGround(lua_State* L);
+    int Player_TeleportTo(lua_State* L);
 
     //equip
 
@@ -58,6 +59,7 @@ namespace LuaBindsAI {
 	static const struct luaL_Reg Player_BindLib[]{
 
         {"InBattleGround", Player_InBattleGround},
+        {"TeleportTo", Player_TeleportTo},
 
         // equip
         {"AddItem", Player_AddItem},

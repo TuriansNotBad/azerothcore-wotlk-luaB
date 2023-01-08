@@ -313,12 +313,18 @@ void LuaBotManager::Update(uint32 diff) {
     if (bLuaCeaseUpdates)
         return;
 
+    std::vector<ObjectGuid> _logoutRequests;
     // make ai evaluate their thingdos
     for (auto bot : m_bots) {
         if (LuaBotAI* botAI = bot.second->GetLuaAI()) {
             botAI->Update(diff);
+            if (botAI->ShouldLogOut())
+                _logoutRequests.push_back(bot.second->GetGUID());
         }
     }
+
+    for (int i = 0; i < _logoutRequests.size(); ++i)
+        LogoutPlayerBot(_logoutRequests[i]);
 
     UpdateSessions();
 

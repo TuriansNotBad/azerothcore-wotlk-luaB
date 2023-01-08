@@ -27,6 +27,7 @@ namespace LuaBindsAI {
     // bot mgmt
 
     int AI_AddBot(lua_State* L);
+    int AI_RemoveBot(lua_State* L);
     int AI_IsBotConnected(lua_State* L);
     int AI_CanMasterOwnBot(lua_State* L);
 
@@ -130,6 +131,7 @@ namespace LuaBindsAI {
         {"IsReady", AI_IsReady},
         // bot mgmt
         {"AddBot", AI_AddBot},
+        {"RemoveBot", AI_RemoveBot},
         {"IsBotConnected", AI_IsBotConnected},
         {"CanMasterOwnBot", AI_CanMasterOwnBot},
 

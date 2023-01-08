@@ -78,6 +78,7 @@ public:
     Player* master;
     ObjectGuid masterGuid;
     bool ceaseUpdates;
+    bool m_logMeOut;
 
     LuaBotAI(Player* me, Player* master, ObjectGuid masterGuid, int logicID);
     ~LuaBotAI();
@@ -118,6 +119,8 @@ public:
     void SetRole(int n) { roleID = n; }
 
     void CeaseUpdates(bool cease = true) { ceaseUpdates = cease; }
+    void RequestLogOut(bool logout = true) { m_logMeOut = logout; }
+    bool ShouldLogOut() { return m_logMeOut; }
     void SetUpdateInterval(uint32 n) { m_updateInterval = n; }
 
     void HandleTeleportAck();

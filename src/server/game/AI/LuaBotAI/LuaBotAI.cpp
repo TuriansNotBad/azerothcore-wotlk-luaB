@@ -40,6 +40,7 @@ LuaBotAI::LuaBotAI(Player* me, Player* master, ObjectGuid masterGuid, int logicI
     masterGuid(masterGuid),
     m_initialized(false),
 
+    m_logMeOut(false),
     ceaseUpdates(false),
     m_updateInterval(50),
 
@@ -86,7 +87,7 @@ void LuaBotAI::Init() {
     if (userTblRef == LUA_NOREF)
         CreateUserTbl();
 
-    if (me->GetLevel() != master->GetLevel()) {
+    if (master && me->GetLevel() != master->GetLevel()) {
         me->GiveLevel(master->GetLevel());
     }
     me->UpdateSkillsToMaxSkillsForLevel();
@@ -152,7 +153,7 @@ void LuaBotAI::Reset(bool dropRefs) {
 void LuaBotAI::Update(uint32 diff) {
     
     // were instructed not to update; likely caused by lua error
-    if (ceaseUpdates) return;
+    if (ceaseUpdates || m_logMeOut) return;
 
     // Is it time to update
     m_updateTimer.Update(diff);
@@ -845,7 +846,7 @@ bool LuaBotAI::HandleSummonCommand(Player* target)
 
 void LuaBotAI::GoPlayerCommand(Player* target) {
     // will crash if moving
-    if (me->IsStopped())
+    if (!me->IsStopped())
         me->StopMoving();
     me->AttackStop();
     me->GetMotionMaster()->Clear(false);

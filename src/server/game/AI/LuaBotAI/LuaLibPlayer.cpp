@@ -54,6 +54,39 @@ int LuaBindsAI::Player_InBattleGround(lua_State* L) {
     return 1;
 }
 
+
+int LuaBindsAI::Player_TeleportTo(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    int mapID = luaL_checkinteger(L, 2);
+    float x = luaL_checknumber(L, 3);
+    float y = luaL_checknumber(L, 4);
+    float z = luaL_checknumber(L, 5);
+
+
+    if (mapID < 0)
+        luaL_error(L, "Player.TeleportTo: Map ID cannot be less than 0. Got mapID=%d", mapID);
+
+    if (player->IsBeingTeleported() || player->isBeingLoaded() || !player->IsInWorld()) {
+        return 0;
+    }
+
+    // stop flight if need
+    if (player->IsInFlight())
+    {
+        player->GetMotionMaster()->MovementExpired();
+        player->CleanupAfterTaxiFlight();
+    }
+    // save only in non-flight case
+    else {
+        player->SaveRecallPosition();
+    }
+    
+    // before GM
+    lua_pushboolean(L, player->TeleportTo(mapID, x, y, z, player->GetOrientation(), 0));
+
+    return 1;
+}
+
 // ===================================================
 // 0. Inventory, AI, Spell
 // ===================================================
