@@ -42,6 +42,7 @@ namespace LuaBindsAI {
     int Unit_MotionMasterClear(lua_State* L);
     int Unit_MoveFollow(lua_State* L);
     int Unit_MoveChase(lua_State* L);
+    int Unit_MoveCharge(lua_State* L);
     int Unit_MoveIdle(lua_State* L);
     int Unit_MovePoint(lua_State* L);
     int Unit_SetStandState(lua_State* L);
@@ -163,6 +164,7 @@ namespace LuaBindsAI {
         {"MonsterMove", Unit_MonsterMove},
         {"MotionMasterClear", Unit_MotionMasterClear},
         {"MoveChase", Unit_MoveChase},
+        {"MoveCharge", Unit_MoveCharge},
         {"MoveFollow", Unit_MoveFollow},
         {"MoveIdle", Unit_MoveIdle},
         {"MovePoint", Unit_MovePoint},

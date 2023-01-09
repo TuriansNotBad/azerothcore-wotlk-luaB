@@ -255,6 +255,18 @@ int LuaBindsAI::Unit_MoveChase(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_MoveCharge(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* target = *Unit_GetUnitObject(L, 2);
+    float x = luaL_checknumber(L, 3);
+    float y = luaL_checknumber(L, 4);
+    float z = luaL_checknumber(L, 5);
+    float speed = luaL_checknumber(L, 6);
+    unit->GetMotionMaster()->MoveCharge(x, y, z, speed, EVENT_CHARGE, nullptr, false, 0.0f, target->GetGUID());
+    return 0;
+}
+
+
 int LuaBindsAI::Unit_MoveFollow(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     Unit* target = *Unit_GetUnitObject(L, 2);
