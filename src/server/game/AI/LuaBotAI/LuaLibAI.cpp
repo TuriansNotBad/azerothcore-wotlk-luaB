@@ -127,6 +127,47 @@ int LuaBindsAI::AI_IsInitialized(lua_State* L) {
 }
 
 // -----------------------------------------------------------
+//                      BGS
+// -----------------------------------------------------------
+
+int LuaBindsAI::AI_HasBgInvite(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->HasBgInvite());
+    return 1;
+}
+
+
+int LuaBindsAI::AI_AcceptBgInvite(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    ai->AcceptBgInvite();
+    return 0;
+}
+
+
+int LuaBindsAI::AI_LeaveBattlefield(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+
+    if (!ai->me->InBattleground())
+        return 0;
+
+    WorldPacket data(CMSG_LEAVE_BATTLEFIELD);
+    data << uint8(0);                           // unk1
+    data << uint8(0);                           // unk2
+    data << uint32(0);                           // BattleGroundTypeId
+    data << uint16(0);                          // unk3
+    ai->me->GetSession()->HandleBattlefieldLeaveOpcode(data);
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_ShouldLeaveBg(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->ShouldLeaveBg());
+    return 1;
+}
+
+// -----------------------------------------------------------
 //                      Bot Mgmt
 // -----------------------------------------------------------
 

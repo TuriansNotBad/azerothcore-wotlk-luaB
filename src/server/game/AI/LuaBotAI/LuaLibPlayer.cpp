@@ -55,6 +55,83 @@ int LuaBindsAI::Player_InBattleGround(lua_State* L) {
 }
 
 
+int LuaBindsAI::Player_InBattleGroundQueue(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    bool ignoreArena = luaL_checkboolean(L, 2);
+    lua_pushboolean(L, player->InBattlegroundQueue(ignoreArena));
+    return 1;
+}
+
+
+int LuaBindsAI::Player_JoinBattleGroundQueue(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    int bg = luaL_checkinteger(L, 2);
+
+    if (player->InBattlegroundQueue() || player->InBattleground())
+        return 0;
+
+    WorldPacket data(CMSG_BATTLEMASTER_JOIN);
+    data << player->GetGUID();                       // battlemaster guid, or player guid if joining queue from BG portal
+    data << uint32(bg);
+    data << uint32(0);                                 // instance id, 0 if First Available selected
+    data << uint8(0);                                  // join as group
+    player->GetSession()->HandleBattlemasterJoinOpcode(data);
+
+    return 0;
+}
+
+
+int LuaBindsAI::Player_JoinBattleGroundReviveQueue(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    int creatureType = luaL_checkinteger(L, 2);
+
+    if (!player->InBattleground() || player->IsAlive())
+        return 0;
+
+    if (Battleground* battleground = player->GetBattleground(false)) {
+        if (Creature* creature = battleground->GetBGCreature(creatureType)) {
+            WorldPacket data(CMSG_AREA_SPIRIT_HEALER_QUEUE);
+            data << creature->GetGUID();
+            player->GetSession()->HandleAreaSpiritHealerQueueOpcode(data);
+        }
+    }
+
+    return 0;
+}
+
+
+int LuaBindsAI::Player_GetBattleGroundTeam(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+
+    if (!player->InBattleground()) {
+        lua_pushinteger(L, -1);
+        return 1;
+    }
+
+    lua_pushinteger(L, player->GetBgTeamId());
+    return 1;
+}
+
+
+int LuaBindsAI::Player_GetBattleGroundStatus(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+
+    if (!player->InBattleground()) {
+        lua_pushinteger(L, -1);
+        return 1;
+    }
+
+    if (Battleground* battleground = player->GetBattleground(false)) {
+        lua_pushinteger(L, battleground->GetStatus());
+        return 1;
+    }
+
+    lua_pushinteger(L, -1);
+    return 1;
+}
+
+
+
 int LuaBindsAI::Player_TeleportTo(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
     int mapID = luaL_checkinteger(L, 2);
@@ -407,6 +484,11 @@ int LuaBindsAI::Player_GetPet(lua_State* L) {
 
 int LuaBindsAI::Player_BuildPlayerRepop(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
+
+    WorldLocation corpseLocation = player->GetCorpseLocation();
+    if (player->GetCorpse() && corpseLocation.GetMapId() == player->GetMapId())
+        return 0;
+
     player->BuildPlayerRepop();
     return 0;
 }

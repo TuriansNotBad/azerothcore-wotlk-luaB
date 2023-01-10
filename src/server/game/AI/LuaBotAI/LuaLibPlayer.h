@@ -14,8 +14,15 @@ namespace LuaBindsAI {
 	Player** Player_GetPlayerObject(lua_State* L, int idx = 1);
 	void Player_CreateUD(Player* player, lua_State* L);
 
-    // 
+    // battlegrounds
+
     int Player_InBattleGround(lua_State* L);
+    int Player_InBattleGroundQueue(lua_State* L);
+    int Player_JoinBattleGroundQueue(lua_State* L);
+    int Player_GetBattleGroundTeam(lua_State* L);
+    int Player_GetBattleGroundStatus(lua_State* L);
+    int Player_JoinBattleGroundReviveQueue(lua_State* L);
+
     int Player_TeleportTo(lua_State* L);
 
     //equip
@@ -58,7 +65,14 @@ namespace LuaBindsAI {
 
 	static const struct luaL_Reg Player_BindLib[]{
 
+        // bgs
         {"InBattleGround", Player_InBattleGround},
+        {"InBattleGroundQueue", Player_InBattleGroundQueue},
+        {"JoinBattleGroundQueue", Player_JoinBattleGroundQueue},
+        {"JoinBattleGroundReviveQueue", Player_JoinBattleGroundReviveQueue},
+        {"GetBattleGroundTeam", Player_GetBattleGroundTeam},
+        {"GetBattleGroundStatus", Player_GetBattleGroundStatus},
+
         {"TeleportTo", Player_TeleportTo},
 
         // equip

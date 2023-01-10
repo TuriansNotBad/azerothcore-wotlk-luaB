@@ -60,6 +60,8 @@ class LuaBotAI {
     int userTblRef;
 
     bool m_initialized;
+    bool m_bgInvite;
+    bool m_bgLeave;
 
     // managers
 
@@ -114,6 +116,9 @@ public:
 
     bool IsInitalized() { return m_initialized; }
     bool IsReady();
+    void AcceptBgInvite();
+    bool HasBgInvite() { return m_bgInvite; }
+    bool ShouldLeaveBg();
 
     int GetRole() { return roleID; }
     void SetRole(int n) { roleID = n; }

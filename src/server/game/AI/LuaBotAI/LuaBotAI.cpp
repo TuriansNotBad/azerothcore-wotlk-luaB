@@ -39,6 +39,8 @@ LuaBotAI::LuaBotAI(Player* me, Player* master, ObjectGuid masterGuid, int logicI
     master(master),
     masterGuid(masterGuid),
     m_initialized(false),
+    m_bgInvite(false),
+    m_bgLeave(false),
 
     m_logMeOut(false),
     ceaseUpdates(false),
@@ -1537,10 +1539,74 @@ void LuaBotAI::HandleSMSG(WorldPacket const& packet) {
         me->GetSession()->HandleResurrectResponseOpcode(data);
         break;
     }
+    case SMSG_BATTLEFIELD_STATUS:
+    {
+        // from combatbotbaseai.cpp
+        if (!me)
+            return;
+
+        if (me->IsBeingTeleported() || me->InBattleground())
+            m_bgInvite = false;
+        else
+        {
+            for (uint32 i = BATTLEGROUND_QUEUE_AV; i <= BATTLEGROUND_QUEUE_AB; i++)
+            {
+                if (me->IsInvitedForBattlegroundQueueType(BattlegroundQueueTypeId(i)))
+                {
+                    m_bgInvite = true;
+                    break;
+                }
+            }
+        }
+        break;
+    }
+    case MSG_PVP_LOG_DATA:
+    {
+        if (Battleground* bg = me->GetBattleground()) {
+            if (bg->GetStatus() == STATUS_WAIT_LEAVE) {
+                m_bgLeave = me->InBattleground();
+            }
+        }
+        else
+            m_bgLeave = me->InBattleground();
+        break;
+    }
     default:
         break;
     }
 
+}
+
+
+void LuaBotAI::AcceptBgInvite() {
+
+    // did not register an invite
+    if (!m_bgInvite)
+        return;
+
+    // keep to classic for now
+    for (uint32 i = BATTLEGROUND_QUEUE_AV; i <= BATTLEGROUND_QUEUE_AB; i++)
+    {
+        if (me->IsInvitedForBattlegroundQueueType(BattlegroundQueueTypeId(i)))
+        {
+            WorldPacket data(CMSG_BATTLEFIELD_PORT);
+            data << uint8(0); // arenatype if arena
+            data << uint8(1); // unk, can be 0x0 (may be if was invited?) and 0x1
+            data << i; // type id from dbc
+            data << uint16(0x1F90); // 0x1F90 constant?
+            data << uint8(1); // enter battle 0x1, leave queue 0x0
+            me->GetSession()->HandleBattleFieldPortOpcode(data);
+            break;
+        }
+    }
+
+}
+
+
+bool LuaBotAI::ShouldLeaveBg() {
+    if (m_bgLeave)
+        m_bgLeave = me->InBattleground();
+    return m_bgLeave;
 }
 
 // TESTING

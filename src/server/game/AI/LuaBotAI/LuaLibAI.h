@@ -24,6 +24,13 @@ namespace LuaBindsAI {
     int AI_IsInitialized(lua_State* L);
     int AI_IsReady(lua_State* L);
 
+    // bg
+
+    int AI_HasBgInvite(lua_State* L);
+    int AI_AcceptBgInvite(lua_State* L);
+    int AI_LeaveBattlefield(lua_State* L);
+    int AI_ShouldLeaveBg(lua_State* L);
+
     // bot mgmt
 
     int AI_AddBot(lua_State* L);
@@ -129,6 +136,13 @@ namespace LuaBindsAI {
         {"DrinkAndEat", AI_DrinkAndEat},
         {"IsInitialized", AI_IsInitialized},
         {"IsReady", AI_IsReady},
+
+        // bgs
+        {"HasBgInvite", AI_HasBgInvite},
+        {"AcceptBgInvite", AI_AcceptBgInvite},
+        {"LeaveBattlefield", AI_LeaveBattlefield},
+        {"ShouldLeaveBg", AI_ShouldLeaveBg},
+
         // bot mgmt
         {"AddBot", AI_AddBot},
         {"RemoveBot", AI_RemoveBot},
