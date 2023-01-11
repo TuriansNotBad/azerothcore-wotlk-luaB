@@ -167,6 +167,105 @@ int LuaBindsAI::AI_ShouldLeaveBg(lua_State* L) {
     return 1;
 }
 
+
+int LuaBindsAI::AI_IsBgObjSpawned(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int type = luaL_checkinteger(L, 2);
+
+    if (!ai->me->InBattleground())
+        return 0;
+
+    if (Battleground* battleground = ai->me->GetBattleground(false)) {
+
+        if (type < 0 || type >= battleground->BgObjects.size())
+            luaL_error(L, "AI_IsBgObjSpawned: index out of bounds. [0, %d), got %d", battleground->BgObjects.size(), type);
+
+        if (GameObject* go = battleground->GetBGObject(type)) {
+            lua_pushboolean(L, go->isSpawned());
+            return 1;
+        }
+
+    }
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_GetBgObjPos(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int type = luaL_checkinteger(L, 2);
+
+    if (!ai->me->InBattleground())
+        return 0;
+
+    if (Battleground* battleground = ai->me->GetBattleground(false)) {
+
+        if (type < 0 || type >= battleground->BgObjects.size())
+            luaL_error(L, "AI_GetBgObjPos: index out of bounds. [0, %d), got %d", battleground->BgObjects.size(), type);
+
+        if (GameObject* go = battleground->GetBGObject(type)) {
+            if (go->isSpawned()) {
+                lua_pushnumber(L, go->GetPositionX());
+                lua_pushnumber(L, go->GetPositionY());
+                lua_pushnumber(L, go->GetPositionZ());
+                return 3;
+            }
+        }
+
+    }
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_UseNearBgObj(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int type = luaL_checkinteger(L, 2);
+
+    if (!ai->me->InBattleground())
+        return 0;
+
+    if (Battleground* battleground = ai->me->GetBattleground(false)) {
+
+        if (type < 0 || type >= battleground->BgObjects.size())
+            luaL_error(L, "AI_UseNearBgObj: index out of bounds. [0, %d), got %d", battleground->BgObjects.size(), type);
+
+        if (GameObject* go = battleground->GetBGObject(type)) {
+            if (go->isSpawned() && ai->me->IsWithinDistInMap(go, go->GetInteractionDistance())) {
+                WorldPacket data(CMSG_GAMEOBJ_USE);
+                data << go->GetGUID();
+                ai->me->GetSession()->HandleGameObjectUseOpcode(data);
+            }
+        }
+
+    }
+
+    return 0;
+}
+
+
+int LuaBindsAI::AI_GetBgCreature(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    int type = luaL_checkinteger(L, 2);
+
+    if (!ai->me->InBattleground())
+        return 0;
+
+    if (Battleground* battleground = ai->me->GetBattleground(false)) {
+
+        if (type < 0 || type >= battleground->BgCreatures.size())
+            luaL_error(L, "AI_GetBgCreature: index out of bounds. [0, %d), got %d", battleground->BgCreatures.size(), type);
+
+        if (Creature* creature = battleground->GetBGCreature(type)) {
+            lua_pushunitornil(L, creature->ToUnit());
+            return 1;
+        }
+
+    }
+
+    return 0;
+}
+
 // -----------------------------------------------------------
 //                      Bot Mgmt
 // -----------------------------------------------------------

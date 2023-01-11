@@ -131,6 +131,35 @@ int LuaBindsAI::Player_GetBattleGroundStatus(lua_State* L) {
 }
 
 
+int LuaBindsAI::Player_IsInAreaTriggerRadius(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    int triggerId = luaL_checkinteger(L, 2);
+
+    AreaTrigger const* areaTrigger = sObjectMgr->GetAreaTrigger(triggerId);
+
+    if (!areaTrigger)
+        luaL_error(L, "Player.IsInAreaTriggerRadius: %d trigger doesn't exist", triggerId);
+
+    lua_pushboolean(L, player->IsInAreaTriggerRadius(areaTrigger));
+    return 1;
+}
+
+
+int LuaBindsAI::Player_SendAreaTriggerPacket(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    int triggerId = luaL_checkinteger(L, 2);
+
+    AreaTrigger const* areaTrigger = sObjectMgr->GetAreaTrigger(triggerId);
+
+    if (!areaTrigger)
+        luaL_error(L, "Player.SendAreaTriggerPacket: %d trigger doesn't exist", triggerId);
+
+    WorldPacket data(CMSG_AREATRIGGER);
+    data << uint32(triggerId);
+    player->GetSession()->HandleAreaTriggerOpcode(data);
+    return 0;
+}
+
 
 int LuaBindsAI::Player_TeleportTo(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);

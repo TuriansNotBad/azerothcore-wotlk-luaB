@@ -23,6 +23,8 @@ namespace LuaBindsAI {
     int Player_GetBattleGroundStatus(lua_State* L);
     int Player_JoinBattleGroundReviveQueue(lua_State* L);
 
+    int Player_IsInAreaTriggerRadius(lua_State* L);
+    int Player_SendAreaTriggerPacket(lua_State* L);
     int Player_TeleportTo(lua_State* L);
 
     //equip
@@ -73,6 +75,8 @@ namespace LuaBindsAI {
         {"GetBattleGroundTeam", Player_GetBattleGroundTeam},
         {"GetBattleGroundStatus", Player_GetBattleGroundStatus},
 
+        {"IsInAreaTriggerRadius", Player_IsInAreaTriggerRadius},
+        {"SendAreaTriggerPacket", Player_SendAreaTriggerPacket},
         {"TeleportTo", Player_TeleportTo},
 
         // equip

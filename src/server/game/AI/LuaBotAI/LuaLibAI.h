@@ -30,6 +30,10 @@ namespace LuaBindsAI {
     int AI_AcceptBgInvite(lua_State* L);
     int AI_LeaveBattlefield(lua_State* L);
     int AI_ShouldLeaveBg(lua_State* L);
+    int AI_GetBgObjPos(lua_State* L);
+    int AI_GetBgCreature(lua_State* L);
+    int AI_IsBgObjSpawned(lua_State* L);
+    int AI_UseNearBgObj(lua_State* L);
 
     // bot mgmt
 
@@ -142,6 +146,10 @@ namespace LuaBindsAI {
         {"AcceptBgInvite", AI_AcceptBgInvite},
         {"LeaveBattlefield", AI_LeaveBattlefield},
         {"ShouldLeaveBg", AI_ShouldLeaveBg},
+        {"GetBgObjPos", AI_GetBgObjPos},
+        {"GetBgCreature", AI_GetBgCreature},
+        {"IsBgObjSpawned", AI_IsBgObjSpawned},
+        {"UseNearBgObj", AI_UseNearBgObj},
 
         // bot mgmt
         {"AddBot", AI_AddBot},

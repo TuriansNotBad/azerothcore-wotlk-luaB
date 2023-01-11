@@ -326,6 +326,52 @@ int LuaBindsAI::Unit_UpdateSpeed(lua_State* L) {
 // ===================================================
 
 
+int LuaBindsAI::Unit_DoesPathExist(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float x = luaL_checknumber(L, 2);
+    float y = luaL_checknumber(L, 3);
+    float z = luaL_checknumber(L, 4);
+
+    PathGenerator path(unit);
+    bool result = path.CalculatePath(x, y, z, false);
+    if (result && !(path.GetPathType() & PATHFIND_NOPATH) && !(path.GetPathType() & PATHFIND_SHORTCUT)) {
+        lua_pushboolean(L, true);
+        return 1;
+    }
+
+    lua_pushboolean(L, false);
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_DoesPathExistPos(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float x = luaL_checknumber(L, 2);
+    float y = luaL_checknumber(L, 3);
+    float z = luaL_checknumber(L, 4);
+    float x1 = luaL_checknumber(L, 5);
+    float y1 = luaL_checknumber(L, 6);
+    float z1 = luaL_checknumber(L, 7);
+
+    PathGenerator path(unit);
+    bool result = path.CalculatePath(x, y, z, x1, y1, z1, false);
+    if (result && !(path.GetPathType() & PATHFIND_NOPATH) && !(path.GetPathType() & PATHFIND_SHORTCUT)) {
+        lua_pushboolean(L, true);
+        return 1;
+    }
+
+    lua_pushboolean(L, false);
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_GetAreaId(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    lua_pushnumber(L, unit->GetAreaId());
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetAngle(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     Unit* to = *Unit_GetUnitObject(L, 2);

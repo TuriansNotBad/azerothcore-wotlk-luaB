@@ -50,6 +50,9 @@ namespace LuaBindsAI {
     int Unit_UpdateSpeed(lua_State* L);
 
     // position related
+    int Unit_DoesPathExist(lua_State* L);
+    int Unit_DoesPathExistPos(lua_State* L);
+    int Unit_GetAreaId(lua_State* L);
     int Unit_GetAbsoluteAngle(lua_State* L);
     int Unit_GetAngle(lua_State* L);
     int Unit_GetCollisionRadius(lua_State* L);
@@ -173,6 +176,9 @@ namespace LuaBindsAI {
         {"UpdateSpeed", Unit_UpdateSpeed},
 
         // position related
+        {"DoesPathExist", Unit_DoesPathExist},
+        {"DoesPathExistPos", Unit_DoesPathExistPos},
+        {"GetAreaId", Unit_GetAreaId},
         {"GetAbsoluteAngle", Unit_GetAbsoluteAngle},
         {"GetAngle", Unit_GetAngle},
         {"GetCollisionRadius", Unit_GetCollisionRadius},
