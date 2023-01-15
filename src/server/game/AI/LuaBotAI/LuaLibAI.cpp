@@ -511,6 +511,14 @@ int LuaBindsAI::AI_AttackStop(lua_State* L) {
 }
 
 
+int LuaBindsAI::AI_IsValidHostileTarget(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    Unit* pTarget = *LuaBindsAI::Unit_GetUnitObject(L, 2);
+    lua_pushboolean(L, IsValidHostileTarget(ai->me, pTarget));
+    return 1;
+}
+
+
 int LuaBindsAI::AI_CanTryToCastSpell(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     Unit* pTarget = *LuaBindsAI::Unit_GetUnitObject(L, 2);

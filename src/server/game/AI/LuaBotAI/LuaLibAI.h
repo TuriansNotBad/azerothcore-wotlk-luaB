@@ -57,6 +57,8 @@ namespace LuaBindsAI {
     int AI_UpdateChaseDist(lua_State* L);
     int AI_UpdateChaseAngle(lua_State* L);
 
+    int AI_IsValidHostileTarget(lua_State* L);
+
     int AI_CanTryToCastSpell(lua_State* L);
     int AI_DoCastSpell(lua_State* L);
     int AI_IsCastingHeal(lua_State* L);
@@ -171,6 +173,7 @@ namespace LuaBindsAI {
         {"UpdateChaseDist", AI_UpdateChaseDist},
         {"UpdateChaseAngle", AI_UpdateChaseAngle},
 
+        {"IsValidHostileTarget", AI_IsValidHostileTarget},
 
         {"CanTryToCastSpell", AI_CanTryToCastSpell},
         {"DoCastSpell", AI_DoCastSpell},
