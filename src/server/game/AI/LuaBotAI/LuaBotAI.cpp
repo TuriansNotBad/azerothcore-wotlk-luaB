@@ -247,7 +247,7 @@ void LuaBotAI::Update(uint32 diff) {
     
     // maybe?
     if (me->GetTarget() == me->GetGUID())
-        me->SetTarget();
+        me->SetSelection(ObjectGuid::Empty);
 
     // let's gooo
     logicManager.Execute(L, this);
@@ -781,7 +781,7 @@ SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntr
     if (me->IsMounted())
         me->RemoveAurasByType(AuraType::SPELL_AURA_MOUNTED);
 
-    me->SetTarget(pTarget->GetGUID());
+    me->SetSelection(pTarget->GetGUID());
     //me->m_castingSpell = (me->GetClass() == CLASS_ROGUE) ? me->GetComboPoints() : pSpellEntry->Id;
     auto result = me->CastSpell(pTarget, pSpellEntry, false);
 
@@ -853,7 +853,7 @@ void LuaBotAI::GoPlayerCommand(Player* target) {
     me->AttackStop();
     me->GetMotionMaster()->Clear(false);
     me->GetMotionMaster()->MoveIdle();
-    me->SetTarget();
+    me->SetSelection(ObjectGuid::Empty);
     //topGoal = Goal(0, 0, Goal::NOPARAMS, nullptr, nullptr);
     //topGoal.SetTerminated(true);
     m_updateTimer.Reset(200);
