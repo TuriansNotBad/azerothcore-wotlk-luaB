@@ -90,7 +90,7 @@ void LuaBindsAI::SatisfyItemRequirements(Player* me, ItemTemplate const* pItem)
         me->SetSkill(pItem->RequiredSkill, pItem->RequiredSkillRank, me->GetMaxSkillValueForLevel(), me->GetMaxSkillValueForLevel());
 
     // Learn Dual Wield Specialization
-    if (pItem->InventoryType == INVTYPE_WEAPONOFFHAND && !me->HasSpell(674))
+    if (!me->HasSpell(674) && (me->getClass() == CLASS_WARRIOR || me->getClass() == CLASS_ROGUE || me->getClass() == CLASS_DEATH_KNIGHT))
         me->learnSpell(674, false, false);
 
 

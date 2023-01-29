@@ -419,7 +419,7 @@ bool LuaBotAI::DrinkAndEat(float healthPer, float manaPer)
             me->CastSpell(me, pSpellEntry, true);
             me->RemoveSpellCooldown(PB_SPELL_FOOD);
         }
-        return true;
+        //return true;
     }
 
     if (!isDrinking && needToDrink)
@@ -435,11 +435,11 @@ bool LuaBotAI::DrinkAndEat(float healthPer, float manaPer)
             me->CastSpell(me, pSpellEntry, true);
             me->RemoveSpellCooldown(PB_SPELL_DRINK);
         }
-        return true;
+        //return true;
     }
 
     bool _interruptEat = !isEating || (isEating && me->GetHealthPct() > 99.0f);
-    bool _interruptDrink = !isDrinking || (isDrinking && me->GetPowerPct(Powers::POWER_MANA) > 99.0f);
+    bool _interruptDrink = !isDrinking || (isDrinking && me->GetPowerPct(Powers::POWER_MANA) > 99.0f) || me->getPowerType() != POWER_MANA;
     bool _interruptOkay = _interruptEat && _interruptDrink;
 
     if ((isEating || isDrinking) && _interruptOkay)
@@ -533,8 +533,8 @@ void LuaBotAI::EquipRandomGear()
     }
 
     // Unequip current gear
-    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
-        me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+    //for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+    //    me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
 
 
     std::map<uint32 /*slot*/, std::vector<ItemTemplate const*>> itemsPerSlot;

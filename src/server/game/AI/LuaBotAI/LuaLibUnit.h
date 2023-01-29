@@ -93,6 +93,7 @@ namespace LuaBindsAI {
     int Unit_GetAttackRange(lua_State* L);
     int Unit_GetAttackTimer(lua_State* L);
     int Unit_GetAuraStacks(lua_State* L);
+    int Unit_GetAuraDuration(lua_State* L);
     int Unit_GetCombatDistance(lua_State* L);
     int Unit_GetCombatReach(lua_State* L);
     int Unit_GetCurrentSpellId(lua_State* L);
@@ -111,14 +112,17 @@ namespace LuaBindsAI {
     int Unit_GetThreatTbl(lua_State* L);
     int Unit_GetVictim(lua_State* L);
     int Unit_GetVictimsInRange(lua_State* L);
+    int Unit_IsAuraStronger(lua_State* L);
     int Unit_HasAura(lua_State* L);
     int Unit_HasAuraIDBy(lua_State* L);
     int Unit_HasAuraBy(lua_State* L);
     int Unit_HasAuraType(lua_State* L);
+    int Unit_HasAuraWithMechanic(lua_State* L);
     int Unit_HasObjInArc(lua_State* L);
     int Unit_HasPosInArc(lua_State* L);
     int Unit_InterruptSpell(lua_State* L);
     int Unit_IsInCombat(lua_State* L);
+    int Unit_IsCastingInterruptableSpell(lua_State* L);
     int Unit_IsNonMeleeSpellCasted(lua_State* L);
     int Unit_IsTargetInRangeOfSpell(lua_State* L);
     int Unit_IsValidHostileTarget(lua_State* L);
@@ -220,6 +224,7 @@ namespace LuaBindsAI {
         {"GetAttackRange", Unit_GetAttackRange},
         {"GetAttackTimer", Unit_GetAttackTimer},
         {"GetAuraStacks", Unit_GetAuraStacks},
+        {"GetAuraDuration", Unit_GetAuraDuration},
         {"GetCombatReach", Unit_GetCombatReach},
         {"GetCombatDistance", Unit_GetCombatDistance},
         {"GetCurrentSpellId", Unit_GetCurrentSpellId},
@@ -240,16 +245,19 @@ namespace LuaBindsAI {
         {"GetThreatTbl", Unit_GetThreatTbl},
         {"GetVictim", Unit_GetVictim},
         {"GetVictimsInRange", Unit_GetVictimsInRange},
-
+        
+        {"IsAuraStronger", Unit_IsAuraStronger},
         {"HasAura", Unit_HasAura},
         {"HasAuraBy", Unit_HasAuraBy},
         {"HasAuraIDBy", Unit_HasAuraIDBy},
         {"HasAuraType", Unit_HasAuraType},
+        {"HasAuraWithMechanic", Unit_HasAuraWithMechanic},
         {"HasObjInArc", Unit_HasObjInArc},
         {"HasPosInArc", Unit_HasPosInArc},
 
         {"InterruptSpell", Unit_InterruptSpell},
 
+        {"IsCastingInterruptableSpell", Unit_IsCastingInterruptableSpell},
         {"IsInCombat", Unit_IsInCombat},
         {"IsNonMeleeSpellCasted", Unit_IsNonMeleeSpellCasted},
         {"IsTargetInRangeOfSpell", Unit_IsTargetInRangeOfSpell},

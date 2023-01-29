@@ -766,6 +766,17 @@ int LuaBindsAI::Unit_GetAuraStacks(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetAuraDuration(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    uint32 spellId = luaL_checkinteger(L, 2);
+    if (Aura* sah = unit->GetAura(spellId))
+        lua_pushinteger(L, sah->GetDuration());
+    else
+        lua_pushinteger(L, -1);
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_GetCombatDistance(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     Unit* to = *Unit_GetUnitObject(L, 2);
@@ -951,6 +962,19 @@ int LuaBindsAI::Unit_GetCurrentSpellId(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_IsAuraStronger(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    int spellIdlhs = luaL_checkinteger(L, 2);
+    int spellIdrhs = luaL_checkinteger(L, 3);
+    Aura* lhs = unit->GetAura(spellIdlhs);
+    Aura* rhs = unit->GetAura(spellIdrhs);
+    if (!lhs || !rhs)
+        return 0;
+    lua_pushboolean(L, lhs->IsAuraStronger(rhs));
+    return 1;
+}
+
+
 int LuaBindsAI::Unit_HasAura(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     int spellId = luaL_checkinteger(L, 2);
@@ -974,6 +998,14 @@ int LuaBindsAI::Unit_HasAuraType(lua_State* L) {
     if (auraId < SPELL_AURA_NONE || auraId >= TOTAL_AURAS)
         luaL_error(L, "Unit.RemoveSpellsCausingAura. Invalid aura type id, expected value in range [%d, %d], got %d", SPELL_AURA_NONE, TOTAL_AURAS - 1, auraId);
     lua_pushboolean(L, unit->HasAuraType((AuraType) auraId));
+    return 1;
+}
+
+
+int LuaBindsAI::Unit_HasAuraWithMechanic(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    int mechanic = luaL_checkinteger(L, 2);
+    lua_pushboolean(L, unit->HasAuraWithMechanic(mechanic));
     return 1;
 }
 
@@ -1021,6 +1053,30 @@ int LuaBindsAI::Unit_InterruptSpell(lua_State* L) {
         luaL_error(L, "Unit.InterruptSpell. Invalid spell type id, expected value in range [0, 3], got %d", spellType);
     unit->InterruptSpell((CurrentSpellTypes) spellType, withDelayed);
     return 0;
+}
+
+
+int LuaBindsAI::Unit_IsCastingInterruptableSpell(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_AUTOREPEAT_SPELL; ++i)
+    {
+        if (Spell* spell = unit->GetCurrentSpell(CurrentSpellTypes(i)))
+        {
+            SpellInfo const* curSpellInfo = spell->m_spellInfo;
+            // check if we can interrupt spell
+            if ((spell->getState() == SPELL_STATE_CASTING
+                || (spell->getState() == SPELL_STATE_PREPARING && spell->GetCastTime() > 0.0f))
+                && curSpellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE
+                && ((i == CURRENT_GENERIC_SPELL && curSpellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT)
+                    || (i == CURRENT_CHANNELED_SPELL && curSpellInfo->ChannelInterruptFlags & CHANNEL_INTERRUPT_FLAG_INTERRUPT)))
+            {
+                lua_pushboolean(L, true);
+                return 1;
+            }
+        }
+    }
+    lua_pushboolean(L, false);
+    return 1;
 }
 
 
