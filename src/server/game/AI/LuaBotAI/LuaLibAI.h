@@ -97,6 +97,7 @@ namespace LuaBindsAI {
     
     // equip
 
+    int AI_EquipCopyFromMaster(lua_State* L);
     int AI_EquipRandomGear(lua_State* L);
     int AI_EquipItem(lua_State* L);
     int AI_EquipDestroyAll(lua_State* L);
@@ -211,6 +212,7 @@ namespace LuaBindsAI {
         {"ResetTalents", AI_ResetTalents},
 
         // equip
+        {"EquipCopyFromMaster", AI_EquipCopyFromMaster},
         {"EquipRandomGear", AI_EquipRandomGear},
         {"EquipItem", AI_EquipItem},
         {"EquipDestroyAll", AI_EquipDestroyAll},

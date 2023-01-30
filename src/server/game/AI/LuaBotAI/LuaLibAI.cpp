@@ -981,6 +981,13 @@ int LuaBindsAI::AI_ResetTalents(lua_State* L) {
 //                      Equip RELATED
 // -----------------------------------------------------------
 
+int LuaBindsAI::AI_EquipCopyFromMaster(lua_State* L) {
+    LuaBotAI* ai = *AI_GetAIObject(L);
+    lua_pushboolean(L, ai->EquipCopyFromMaster());
+    return 1;
+}
+
+
 int LuaBindsAI::AI_EquipItem(lua_State* L) {
     LuaBotAI* ai = *AI_GetAIObject(L);
     int itemID = luaL_checkinteger(L, 2);

@@ -334,7 +334,7 @@ int LuaBindsAI::Unit_DoesPathExist(lua_State* L) {
 
     PathGenerator path(unit);
     bool result = path.CalculatePath(x, y, z, false);
-    if (result && !(path.GetPathType() & PATHFIND_NOPATH) && !(path.GetPathType() & PATHFIND_SHORTCUT)) {
+    if (result && (path.GetPathType() & PATHFIND_NORMAL)) {
         lua_pushboolean(L, true);
         return 1;
     }
@@ -355,7 +355,7 @@ int LuaBindsAI::Unit_DoesPathExistPos(lua_State* L) {
 
     PathGenerator path(unit);
     bool result = path.CalculatePath(x, y, z, x1, y1, z1, false);
-    if (result && !(path.GetPathType() & PATHFIND_NOPATH) && !(path.GetPathType() & PATHFIND_SHORTCUT)) {
+    if (result && (path.GetPathType() & PATHFIND_NORMAL)) {
         lua_pushboolean(L, true);
         return 1;
     }
@@ -497,6 +497,37 @@ int LuaBindsAI::Unit_GetNearPoint(lua_State* L) {
 }
 
 
+int LuaBindsAI::Unit_GetNearPoint2D(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    Unit* searcher = *Unit_GetUnitObject(L, 2);
+    float bounding_radius = luaL_checknumber(L, 3);
+    float distance2d = luaL_checknumber(L, 4);
+    float absAngle = luaL_checknumber(L, 5);
+
+    float x = 0.0f;
+    float y = 0.0f;
+    float z = unit->GetPositionZ();
+    
+    unit->GetNearPoint2D(x, y, bounding_radius + distance2d, absAngle);
+    if (unit->IsInWater() && searcher->IsInWater())
+    {
+        // if the searcher is in water
+        // we have no ground so we can
+        // set the target height to the
+        // z-coord to keep the searcher
+        // at the correct height (face to face)
+        z += unit->GetCollisionHeight() - searcher->GetCollisionHeight();
+    }
+    searcher->UpdateAllowedPositionZ(x, y, z);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    lua_pushnumber(L, z);
+
+    return 3;
+
+}
+
+
 
 int LuaBindsAI::Unit_GetNearPointAroundPosition(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
@@ -554,6 +585,15 @@ int LuaBindsAI::Unit_GetRelativeAngle(lua_State* L) {
 int LuaBindsAI::Unit_IsInWorld(lua_State* L) {
     Unit* unit = *Unit_GetUnitObject(L);
     lua_pushboolean(L, unit->IsInWorld());
+    return 1;
+}
+
+int LuaBindsAI::Unit_IsWithinLOS(lua_State* L) {
+    Unit* unit = *Unit_GetUnitObject(L);
+    float x = luaL_checknumber(L, 2);
+    float y = luaL_checknumber(L, 3);
+    float z = luaL_checknumber(L, 4);
+    lua_pushboolean(L, unit->IsWithinLOS(x,y,z));
     return 1;
 }
 

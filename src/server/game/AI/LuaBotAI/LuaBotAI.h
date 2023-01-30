@@ -245,6 +245,7 @@ public:
     uint32 GetSpellOfRank(uint32 firstSpell, uint32 rank);
     std::string GetSpellName(uint32 spellID);
 
+    bool EquipCopyFromMaster();
     uint32 EquipFindItemByName(const std::string& name);
     void EquipItem(uint32 itemID);
     void EquipDestroyAll();

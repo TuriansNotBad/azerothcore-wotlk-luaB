@@ -1414,6 +1414,29 @@ uint32 LuaBotAI::GetSpellMaxRankForMe(uint32 spellID) {
 }
 
 
+bool LuaBotAI::EquipCopyFromMaster() {
+
+    Player* owner = ObjectAccessor::FindConnectedPlayer(masterGuid);
+    if (!owner) return false;
+
+    if (owner->getClass() != me->getClass()) return false;
+
+    for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i) {
+
+        me->DestroyItem(INVENTORY_SLOT_BAG_0, i, true);
+
+        Item* item = owner->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        if (!item || !item->GetTemplate()) continue;
+
+        EquipItem(item->GetEntry());
+
+    }
+
+    return true;
+
+}
+
+
 void LuaBotAI::EquipDestroyAll() {
 
     for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)

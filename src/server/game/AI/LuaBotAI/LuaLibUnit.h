@@ -65,6 +65,7 @@ namespace LuaBindsAI {
     int Unit_GetInstanceId(lua_State* L);
     int Unit_GetMapId(lua_State* L);
     int Unit_GetNearPoint(lua_State* L);
+    int Unit_GetNearPoint2D(lua_State* L);
     int Unit_GetNearPointAroundPosition(lua_State* L);
     int Unit_GetForwardVector(lua_State* L);
     int Unit_GetPosition(lua_State* L);
@@ -127,6 +128,7 @@ namespace LuaBindsAI {
     int Unit_IsTargetInRangeOfSpell(lua_State* L);
     int Unit_IsValidHostileTarget(lua_State* L);
     int Unit_IsWithinLOSInMap(lua_State* L);
+    int Unit_IsWithinLOS(lua_State* L);
     int Unit_RemoveAura(lua_State* L);
     int Unit_RemoveAuraByCancel(lua_State* L);
     int Unit_RemoveSpellsCausingAura(lua_State* L);
@@ -196,12 +198,14 @@ namespace LuaBindsAI {
         {"GetInstanceId", Unit_GetInstanceId},
         {"GetMapId", Unit_GetMapId},
         {"GetNearPoint", Unit_GetNearPoint},
+        {"GetNearPoint2D", Unit_GetNearPoint2D},
         {"GetNearPointAroundPosition", Unit_GetNearPointAroundPosition},
         {"GetOrientation", Unit_GetOrientation},
         {"GetPosition", Unit_GetPosition},
         {"GetRelativeAngle", Unit_GetRelativeAngle},
         {"IsInWorld", Unit_IsInWorld},
         {"IsWithinLOSInMap", Unit_IsWithinLOSInMap},
+        {"IsWithinLOS", Unit_IsWithinLOS},
         {"SetFacingTo", Unit_SetFacingTo},
         {"SetFacingToObject", Unit_SetFacingToObject},
         {"SetOrientation", Unit_SetOrientation},
