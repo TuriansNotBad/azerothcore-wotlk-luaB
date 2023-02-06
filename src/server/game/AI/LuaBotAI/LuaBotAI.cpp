@@ -1,3 +1,12 @@
+// includes code by:
+// ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+// Kittnz <Kittnz@users.noreply.github.com>
+// from https://github.com/vmangos/core
+//
+// UltraNix <ultranix@gmail.com>
+// from https://github.com/ZhengPeiRu21/mod-playerbots
+
+
 
 #include "LuaBotAI.h"
 #include "LuaLibPlayer.h"
@@ -275,6 +284,9 @@ bool LuaBotAI::IsReady() { return IsInitalized() && me->IsInWorld() && !me->IsBe
 
 void LuaBotAI::HandleTeleportAck() {
 
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots PlayerbotAI.cpp
+
     me->GetMotionMaster()->Clear(true);
     me->StopMoving();
 
@@ -356,32 +368,10 @@ void LuaBotAI::UnrefPlayerUD(lua_State* L) {
 
 
 // ========================================================================
-// 1. Most/all of these functions are ports of Vmangos partybots functions
+// 1. Most of these functions are ports of Vmangos partybots functions
 // ========================================================================
 
 void LuaBotAI::AttackAutoshot(Unit* pVictim, float chaseDist) {
-    me->Attack(pVictim, false);
-    if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == IDLE_MOTION_TYPE
-        && me->GetDistance(pVictim) > chaseDist + 5)
-    {
-        me->GetMotionMaster()->MoveChase(pVictim, chaseDist);
-    }
-
-    if (me->HasSpell(PB_SPELL_AUTO_SHOT) &&
-        (me->IsWithinCombatRange(pVictim, 5.0f) &&
-        !me->IsNonMeleeSpellCast(false)))
-    {
-        switch (me->CastSpell(pVictim, PB_SPELL_AUTO_SHOT, false))
-        {
-        case SPELL_FAILED_NEED_AMMO:
-        case SPELL_FAILED_NO_AMMO:
-        {
-            AddAmmo();
-            me->CastSpell(pVictim, PB_SPELL_AUTO_SHOT, false);
-            break;
-        }
-        }
-    }
 }
 
 void LuaBotAI::AttackStopAutoshot() {
@@ -392,6 +382,9 @@ void LuaBotAI::AttackStopAutoshot() {
 
 bool LuaBotAI::DrinkAndEat(float healthPer, float manaPer)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // from https://github.com/vmangos/core PartyBotAI.cpp
 
     if (me->GetVictim())
     {
@@ -450,6 +443,11 @@ bool LuaBotAI::DrinkAndEat(float healthPer, float manaPer)
 
 void LuaBotAI::AddItemToInventory(uint32 itemId, uint32 count)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     ItemPosCountVec dest;
     uint8 msg = me->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count);
     if (msg == EQUIP_ERR_OK)
@@ -461,6 +459,11 @@ void LuaBotAI::AddItemToInventory(uint32 itemId, uint32 count)
 
 void LuaBotAI::AddAmmo()
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp CombatBotBaseAI::AddHunterAmmo
+
     if (Item* pWeapon = me->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
     {
         if (ItemTemplate const* pWeaponProto = pWeapon->GetTemplate())
@@ -514,6 +517,11 @@ void LuaBotAI::AddAmmo()
 
 void LuaBotAI::EquipRandomGear()
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     switch (me->getClass())
     {
     case CLASS_WARRIOR:
@@ -718,6 +726,11 @@ void LuaBotAI::EquipRandomGear()
 
 bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bool bAura) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     if (me->HasSpellCooldown(pSpellEntry->Id))
         return false;
 
@@ -773,6 +786,11 @@ bool LuaBotAI::CanTryToCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry, bo
 
 SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntry)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     if (me != pTarget) {
         if ((pSpellEntry->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT) && !me->HasInArc(static_cast<float>(M_PI) / 2.0f, pTarget))
             me->SetFacingToObject(pTarget);
@@ -815,6 +833,11 @@ SpellCastResult LuaBotAI::DoCastSpell(Unit* pTarget, SpellInfo const* pSpellEntr
 
 uint8 LuaBotAI::GetAttackersInRangeCount(float range) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     uint8 count = 0;
     for (const auto& pTarget : me->getAttackers())
         if (me->IsWithinCombatRange(pTarget, range))
@@ -825,6 +848,10 @@ uint8 LuaBotAI::GetAttackersInRangeCount(float range) const
 
 Unit* LuaBotAI::GetMarkedTarget(RaidTargetIcon mark) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // from https://github.com/vmangos/core PartyBotAI.cpp
+
     ObjectGuid targetGuid = me->GetGroup()->GetTargetWithIcon(mark);
     if (targetGuid.IsUnit())
         return ObjectAccessor::GetUnit(*me, targetGuid);
@@ -861,6 +888,10 @@ void LuaBotAI::GoPlayerCommand(Player* target) {
 }
 
 void LuaBotAI::Mount(bool toMount, uint32 mountSpell) {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // from https://github.com/vmangos/core PartyBotAI.cpp
+
     //Player* pLeader = GetPartyLeader();
     if (toMount && false == me->IsMounted())
     {
@@ -887,6 +918,11 @@ void LuaBotAI::Mount(bool toMount, uint32 mountSpell) {
 
 bool LuaBotAI::IsValidHostileTarget(Unit const* pTarget) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     return me->IsValidAttackTarget(pTarget) &&
         pTarget->CanSeeOrDetect(me) &&
         !pTarget->HasBreakableByDamageCrowdControlAura() &&
@@ -896,6 +932,11 @@ bool LuaBotAI::IsValidHostileTarget(Unit const* pTarget) const
 
 bool LuaBotAI::IsValidDispelTarget(Unit* pTarget, SpellInfo const* pSpellEntry) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     uint32 dispelMask = 0;
     bool bFoundOneDispell = false;
     // Compute Dispel Mask
@@ -982,6 +1023,10 @@ bool LuaBotAI::MoveDistance(Unit* pTarget, float distance, float angle)
 
 bool LuaBotAI::RunAwayFromTarget(Unit* pTarget)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // from https://github.com/vmangos/core PartyBotAI.cpp
+
     Player* pLeader = nullptr;
     if (Group* g = me->GetGroup())
         pLeader = g->GetLeader();
@@ -1007,29 +1052,16 @@ bool LuaBotAI::RunAwayFromTarget(Unit* pTarget)
 
 Unit* LuaBotAI::SelectPartyAttackTarget() const
 {
-    Group* pGroup = me->GetGroup();
-    for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
-    {
-        if (Player* pMember = itr->GetSource())
-        {
-            // We already checked self.
-            if (pMember == me)
-                continue;
-
-            for (const auto pAttacker : pMember->getAttackers())
-            {
-                if (IsValidHostileTarget(pAttacker) &&
-                    me->IsWithinDist(pAttacker, 50.0f))
-                    return pAttacker;
-            }
-        }
-    }
-
     return nullptr;
 }
 
 Player* LuaBotAI::SelectShieldTarget(float hpRate) const
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     Group* pGroup = me->GetGroup();
     for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
@@ -1054,41 +1086,16 @@ Player* LuaBotAI::SelectShieldTarget(float hpRate) const
 
 bool LuaBotAI::ShouldAutoRevive() const
 {
-    if (me->getDeathState() == DEAD)
-        return true;
-
-    bool alivePlayerNearby = false;
-    Group* pGroup = me->GetGroup();
-    for (GroupReference* itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
-    {
-        if (Player* pMember = itr->GetSource())
-        {
-            if (pMember == me)
-                continue;
-
-            if (pMember->IsInCombat())
-                return false;
-
-            if (pMember->IsAlive())
-            {
-                if (pMember->GetLevel() > 13)
-                    if (pMember->getClass() == CLASS_PRIEST ||
-                        pMember->getClass() == CLASS_DRUID ||
-                        pMember->getClass() == CLASS_PALADIN ||
-                        pMember->getClass() == CLASS_SHAMAN)
-                    return false;
-
-                if (me->IsWithinDistInMap(pMember, 15.0f))
-                    alivePlayerNearby = true;
-            }
-        }
-    }
-
-    return alivePlayerNearby;
+    return false;
 }
 
 void LuaBotAI::SummonPetIfNeeded(uint32 petId)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     if (me->getClass() == CLASS_HUNTER)
     {
         if (me->GetCharm())
@@ -1564,7 +1571,11 @@ void LuaBotAI::HandleSMSG(WorldPacket const& packet) {
     }
     case SMSG_BATTLEFIELD_STATUS:
     {
-        // from combatbotbaseai.cpp
+
+        // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+        // and Kittnz <Kittnz@users.noreply.github.com>
+        // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
         if (!me)
             return;
 

@@ -1,3 +1,9 @@
+// includes code by:
+// ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+// Kittnz <Kittnz@users.noreply.github.com>
+// from https://github.com/vmangos/core
+
+
 #include "LuaUtils.h"
 #include "LuaLibPlayer.h"
 #include "LuaLibUnit.h"
@@ -47,7 +53,12 @@ void* luaL_checkudwithfield(lua_State* L, int idx, const char* fieldName) {
 
 // copied from combatbotbaseai.cpp
 bool LuaBindsAI::IsValidHostileTarget(Unit* me, Unit const* pTarget) {
-	return me->IsValidAttackTarget(pTarget) &&
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
+    return me->IsValidAttackTarget(pTarget) &&
 		pTarget->CanSeeOrDetect(me) &&
 		!pTarget->HasBreakableByDamageCrowdControlAura() &&
 		!pTarget->IsImmuneToAll() &&
@@ -57,6 +68,11 @@ bool LuaBindsAI::IsValidHostileTarget(Unit* me, Unit const* pTarget) {
 
 void LuaBindsAI::SatisfyItemRequirements(Player* me, ItemTemplate const* pItem)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     if (me->GetLevel() < pItem->RequiredLevel)
     {
         me->GiveLevel(pItem->RequiredLevel);
@@ -98,6 +114,10 @@ void LuaBindsAI::SatisfyItemRequirements(Player* me, ItemTemplate const* pItem)
 
 void LuaBindsAI::GetEquipSlotsForType(InventoryType type, uint32 SubClass, uint8 slots[4], uint8 classId, bool canDualWield)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
 
     slots[0] = NULL_SLOT;
     slots[1] = NULL_SLOT;
@@ -226,6 +246,11 @@ void LuaBindsAI::GetEquipSlotsForType(InventoryType type, uint32 SubClass, uint8
 
 bool LuaBindsAI::IsShieldClass(uint8 playerClass)
 {
+
+    // original by ratkosrb <35845488+ratkosrb@users.noreply.github.com>
+    // and Kittnz <Kittnz@users.noreply.github.com>
+    // from https://github.com/vmangos/core CombatBotBasetAI.cpp
+
     switch (playerClass)
     {
     case CLASS_WARRIOR:
@@ -238,6 +263,7 @@ bool LuaBindsAI::IsShieldClass(uint8 playerClass)
 
 uint32 LuaBindsAI::GetHighestKnownArmorProficiency(Player* me)
 {
+
     Classes cls = Classes(me->getClass());
 
     switch (cls) {

@@ -98,6 +98,9 @@ Player* LuaBotManager::GetLuaBot(ObjectGuid guid) {
 
 void LuaBotManager::AddBot(const std::string& char_name, uint32 masterAccountId, int logicID, std::string spec) {
 
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots PlayerbotAI.cpp
+
     // find bot guid
     ObjectGuid botGuid = sCharacterCache->GetCharacterGuidByName(char_name);
 
@@ -131,6 +134,9 @@ void LuaBotManager::AddBot(const std::string& char_name, uint32 masterAccountId,
 
 
 void LuaBotManager::HandlePlayerBotLoginCallback(LuaBotLoginQueryHolder const& holder) {
+
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots
 
     uint32 botAccountId = holder.GetAccountId();
 
@@ -173,6 +179,10 @@ void LuaBotManager::OnBotLogin(Player* bot) {
 
 bool LuaBotManager::LogoutPlayerBotInternal(ObjectGuid guid)
 {
+
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots PlayerbotAI.cpp
+
     if (Player* bot = GetLuaBot(guid)) {
         LOG_INFO("luabots", "Bot {} logging out", bot->GetName().c_str());
         bot->SaveToDB(false, false);
@@ -201,6 +211,9 @@ void LuaBotManager::LogoutPlayerBot(ObjectGuid guid)
 
 
 void LuaBotManager::LogoutAllBots() {
+
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots PlayerbotAI.cpp
 
     for (auto itr = m_bots.begin(); itr != m_bots.end();)
         if (Player* bot = itr._Ptr->_Myval.second) {
@@ -332,6 +345,10 @@ void LuaBotManager::Update(uint32 diff) {
 
 void LuaBotManager::UpdateSessions()
 {
+
+    // original source code by UltraNix <ultranix@gmail.com>
+    // from https://github.com/ZhengPeiRu21/mod-playerbots PlayerbotAI.cpp
+
     for (auto itr : m_bots)
     {
 
