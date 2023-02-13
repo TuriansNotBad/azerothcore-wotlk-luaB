@@ -163,9 +163,6 @@ struct boss_eye_of_cthun : public BossAI
         me->RemoveUnitFlag(UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
         me->SetVisible(true);
 
-        //Reset Phase
-        instance->SetData(DATA_CTHUN_PHASE, PHASE_NOT_STARTED);
-
         //to avoid having a following void zone
         Creature* pPortal = me->FindNearestCreature(NPC_CTHUN_PORTAL, 10);
         if (pPortal)
@@ -323,7 +320,7 @@ struct boss_eye_of_cthun : public BossAI
                             me->RemoveAurasDueToSpell(SPELL_RED_COLORATION);
                             me->RemoveAurasDueToSpell(SPELL_FREEZE_ANIM);
                             me->InterruptNonMeleeSpells(false);
-                            ScheduleTasks();
+                            ScheduleTask();
                         }
                         else
                             tasker.Repeat(1s);
@@ -544,8 +541,6 @@ struct boss_cthun : public BossAI
         {
             eye->DespawnOrUnsummon();
         }
-
-        instance->SetData(DATA_CTHUN_PHASE, PHASE_CTHUN_DONE);
     }
 
     void SummonedCreatureDies(Creature* creature, Unit* /*killer*/) override
