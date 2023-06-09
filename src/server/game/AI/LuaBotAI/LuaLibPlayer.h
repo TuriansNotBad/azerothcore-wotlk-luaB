@@ -32,6 +32,8 @@ namespace LuaBindsAI {
     int Player_AddItem(lua_State* L);
     int Player_EquipItem(lua_State* L);
 
+    int Player_GetComboPoints(lua_State* L);
+
     // spells
 
     int Player_LearnSpell(lua_State* L);
@@ -83,6 +85,7 @@ namespace LuaBindsAI {
         {"AddItem", Player_AddItem},
         {"EquipItem", Player_EquipItem},
 
+        {"GetComboPoints", Player_GetComboPoints},
         // spells
         {"LearnSpell", Player_LearnSpell},
         {"HasSpell", Player_HasSpell},

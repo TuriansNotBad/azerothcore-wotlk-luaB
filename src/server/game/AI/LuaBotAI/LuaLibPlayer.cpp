@@ -276,6 +276,13 @@ int LuaBindsAI::Player_IsReady(lua_State* L) {
 }
 
 
+int LuaBindsAI::Player_GetComboPoints(lua_State* L) {
+    Player* player = *Player_GetPlayerObject(L);
+    lua_pushnumber(L, player->GetComboPoints());
+    return 1;
+}
+
+
 int LuaBindsAI::Player_HasSpell(lua_State* L) {
     Player* player = *Player_GetPlayerObject(L);
     uint32 spellID = luaL_checkinteger(L, 2);
