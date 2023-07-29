@@ -31,6 +31,7 @@
 #include "RandomMovementGenerator.h"
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
+#include "BotMovementGenerator.h"
 
 inline MovementGenerator* GetIdleMovementGenerator()
 {
@@ -226,6 +227,52 @@ void MotionMaster::DirectExpireSlot(MovementSlot slot, bool reset)
         InitTop();
     else if (reset)
         top()->Reset(_owner);
+}
+
+void MotionMaster::MoveBotChase(Unit* target, float dist, float angle, float angleT)
+{
+    // Xinef: do not allow to move with UNIT_FLAG_DISABLE_MOVE
+    // ignore movement request if target not exist
+    if (!target || target == _owner || _owner->HasUnitFlag(UNIT_FLAG_DISABLE_MOVE))
+        return;
+
+    //_owner->ClearUnitState(UNIT_STATE_FOLLOW);
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+    {
+        LOG_DEBUG("movement.motionmaster", "Player ({}) chase to {} ({})",
+            _owner->GetGUID().ToString(), target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetGUID().ToString());
+        Mutate(new BotChaseMovementGenerator<Player>(target, dist, ChaseAngle(angle, angleT)), MOTION_SLOT_ACTIVE);
+    }
+    else
+    {
+        LOG_DEBUG("movement.motionmaster", "Creature ({}) chase to {} ({})",
+            _owner->GetGUID().ToString(), target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetGUID().ToString());
+        Mutate(new BotChaseMovementGenerator<Creature>(target, dist, ChaseAngle(angle, angleT)), MOTION_SLOT_ACTIVE);
+    }
+}
+
+void MotionMaster::MoveBotFollow(Unit* target, float dist, float angle, float angleT, MovementSlot slot)
+{
+    // Xinef: do not allow to move with UNIT_FLAG_DISABLE_MOVE
+    // ignore movement request if target not exist
+    if (!target || target == _owner || _owner->HasUnitFlag(UNIT_FLAG_DISABLE_MOVE))
+    {
+        return;
+    }
+
+    //_owner->AddUnitState(UNIT_STATE_FOLLOW);
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+    {
+        LOG_DEBUG("movement.motionmaster", "Player ({}) follow to {} ({})",
+            _owner->GetGUID().ToString(), target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetGUID().ToString());
+        Mutate(new BotFollowMovementGenerator<Player>(target, dist, ChaseAngle(angle, angleT)), slot);
+    }
+    else
+    {
+        LOG_DEBUG("movement.motionmaster", "Creature ({}) follow to {} ({})",
+            _owner->GetGUID().ToString(), target->GetTypeId() == TYPEID_PLAYER ? "player" : "creature", target->GetGUID().ToString());
+        Mutate(new BotFollowMovementGenerator<Creature>(target, dist, ChaseAngle(angle, angleT)), slot);
+    }
 }
 
 void MotionMaster::MoveIdle()

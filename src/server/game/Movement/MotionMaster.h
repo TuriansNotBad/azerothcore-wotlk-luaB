@@ -196,6 +196,8 @@ public:
             DirectExpireSlot(slot, reset);
     }
 
+    void MoveBotFollow(Unit* target, float dist, float angle, float angleT, MovementSlot slot = MOTION_SLOT_ACTIVE);
+    void MoveBotChase(Unit* target, float dist = 0.0f, float angle = 0.0f, float angleT = 15.0f);
     void MoveIdle();
     void MoveTargetedHome(bool walk = false);
     void MoveRandom(float wanderDistance = 0.0f);

@@ -250,7 +250,8 @@ int LuaBindsAI::Unit_MoveChase(lua_State* L) {
     Unit* target = *Unit_GetUnitObject(L, 2);
     float dist = luaL_checknumber(L, 3);
     float angle = luaL_checknumber(L, 4);
-    unit->GetMotionMaster()->MoveChase(target, dist, angle);
+    float angleT = luaL_checknumber(L, 5);
+    unit->GetMotionMaster()->MoveBotChase(target, dist, angle, angleT);
     return 0;
 }
 
@@ -272,7 +273,10 @@ int LuaBindsAI::Unit_MoveFollow(lua_State* L) {
     Unit* target = *Unit_GetUnitObject(L, 2);
     float dist = luaL_checknumber(L, 3);
     float angle = luaL_checknumber(L, 4);
-    unit->GetMotionMaster()->MoveFollow(target, dist, angle);
+    float angleT = 0.1;
+    if (lua_gettop(L) == 5)
+        angleT = luaL_checknumber(L, 5);
+    unit->GetMotionMaster()->MoveBotFollow(target, dist, angle, angleT);
     return 0;
 }
 
