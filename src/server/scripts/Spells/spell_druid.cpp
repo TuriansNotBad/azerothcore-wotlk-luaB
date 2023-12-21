@@ -15,19 +15,19 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Containers.h"
+#include "CreatureScript.h"
+#include "GridNotifiers.h"
+#include "Player.h"
+#include "SpellAuraEffects.h"
+#include "SpellMgr.h"
+#include "SpellScript.h"
+#include "SpellScriptLoader.h"
 /*
  * Scripts for spells with SPELLFAMILY_DRUID and SPELLFAMILY_GENERIC spells used by druid players.
  * Ordered alphabetically using scriptname.
  * Scriptnames of files in this file should be prefixed with "spell_dru_".
  */
-
-#include "Containers.h"
-#include "GridNotifiers.h"
-#include "Player.h"
-#include "ScriptMgr.h"
-#include "SpellAuraEffects.h"
-#include "SpellMgr.h"
-#include "SpellScript.h"
 
 enum DruidSpells
 {
@@ -407,6 +407,26 @@ class spell_dru_dash : public SpellScript
     void Register() override
     {
         OnCheckCast += SpellCheckCastFn(spell_dru_dash::CheckCast);
+    }
+};
+
+// -1850 - Dash
+class spell_dru_dash_aura : public AuraScript
+{
+    PrepareAuraScript(spell_dru_dash_aura);
+
+    void CalculateAmount(AuraEffect const* /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
+    {
+        // do not set speed if not in cat form
+        if (GetUnitOwner()->GetShapeshiftForm() != FORM_CAT)
+        {
+            amount = 0;
+        }
+    }
+
+    void Register() override
+    {
+        DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_dash_aura::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_INCREASE_SPEED);
     }
 };
 
@@ -1185,7 +1205,7 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_barkskin);
     RegisterSpellScript(spell_dru_treant_scaling);
     RegisterSpellScript(spell_dru_berserk);
-    RegisterSpellScript(spell_dru_dash);
+    RegisterSpellAndAuraScriptPair(spell_dru_dash, spell_dru_dash_aura);
     RegisterSpellScript(spell_dru_enrage);
     RegisterSpellScript(spell_dru_glyph_of_starfire);
     RegisterSpellScript(spell_dru_idol_lifebloom);
@@ -1210,3 +1230,4 @@ void AddSC_druid_spell_scripts()
     RegisterSpellScript(spell_dru_wild_growth);
     RegisterSpellScript(spell_dru_moonkin_form_passive_proc);
 }
+

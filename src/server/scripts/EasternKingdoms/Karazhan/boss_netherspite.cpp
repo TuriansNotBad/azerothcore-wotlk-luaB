@@ -15,12 +15,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "CreatureScript.h"
 #include "Player.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "karazhan.h"
 #include "SpellAuraEffects.h"
 #include "SpellScript.h"
+#include "SpellScriptLoader.h"
+#include "karazhan.h"
 
 enum Emotes
 {
@@ -101,12 +102,7 @@ struct boss_netherspite : public BossAI
         BossAI::Reset();
         berserk = false;
         HandleDoors(true);
-
-        for (int i = 0; i < 3; ++i)
-        {
-            PortalGUID[i].Clear();
-            BeamTarget[i].Clear();
-        }
+        DestroyPortals();
     }
 
     void SummonPortals()
@@ -225,6 +221,24 @@ struct boss_netherspite : public BossAI
         });
     }
 
+    void DestroyPortals()
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            if (Creature* portal = ObjectAccessor::GetCreature(*me, PortalGUID[i]))
+            {
+                portal->DisappearAndDie();
+            }
+            if (Creature* portal = ObjectAccessor::GetCreature(*me, BeamerGUID[i]))
+            {
+                portal->DisappearAndDie();
+            }
+
+            PortalGUID[i].Clear();
+            BeamTarget[i].Clear();
+        }
+    }
+
     void SwitchToBanishPhase()
     {
         Talk(EMOTE_PHASE_BANISH);
@@ -234,16 +248,7 @@ struct boss_netherspite : public BossAI
         DoCastSelf(SPELL_BANISH_VISUAL, true);
         DoCastSelf(SPELL_BANISH_ROOT, true);
 
-        for (uint32 id : PortalID)
-        {
-            summons.DespawnEntry(id);
-        }
-
-        for (int i = 0; i < 3; ++i)
-        {
-            PortalGUID[i].Clear();
-            BeamTarget[i].Clear();
-        }
+        DestroyPortals();
 
         scheduler.Schedule(30s, [this](TaskContext)
         {
@@ -332,3 +337,4 @@ void AddSC_boss_netherspite()
     RegisterKarazhanCreatureAI(boss_netherspite);
     RegisterSpellScript(spell_nether_portal_perseverence);
 }
+
